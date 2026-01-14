@@ -26,22 +26,20 @@
     <script src="{{ asset('theme/dashboard/assets/static/js/initTheme.js') }}"></script>
 
     <div id="app">
+        <div id="main" class="layout-horizontal">
 
-        @include('dashboard.components.sidebar')
+            @include('dashboard.components.header')
 
-        <div id="main">
-            <header class="mb-3">
-                <a href="#" class="burger-btn d-block d-xl-none">
-                    <i class="bi bi-justify fs-3"></i>
-                </a>
-            </header>
+            <div class="content-wrapper container">
 
-            <div class="page-heading">
-                @yield('page-heading')
-            </div>
+                <div class="page-heading">
+                    @yield('page-heading')
+                </div>
 
-            <div class="page-content">
-                @yield('content')
+                <div class="page-content">
+                    @yield('content')
+                </div>
+
             </div>
 
             {{-- @include('dashboard.components.footer') --}}
@@ -50,6 +48,7 @@
     </div>
 
     <script src="{{ asset('theme/dashboard/assets/static/js/components/dark.js') }}"></script>
+    <script src="{{ asset('theme/dashboard/assets/static/js/pages/horizontal-layout.js') }}"></script>
     <script src="{{ asset('theme/dashboard/assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js') }}"></script>
 
     <script src="{{ asset('theme/dashboard/assets/compiled/js/app.js') }}"></script>

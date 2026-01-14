@@ -32,57 +32,62 @@
 
         <div class="card">
             <div class="card-header">
-                <h5 class="card-title">Data Pengguna: {{ $user->name }}</h5>
+                <h5 class="card-title">Data Pengguna</h5>
             </div>
             <div class="card-body">
                 <div class="row">
-                    {{-- Left Column: Account Info --}}
                     <div class="col-md-6">
-                        <div class="form-group mb-3">
-                            <label class="form-label fw-bold">Nama Lengkap</label>
-                            <input type="text" class="form-control" value="{{ $user->name }}" disabled>
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-1">Nama Lengkap</h6>
+                            <p class="fs-5 fw-bold text-dark">{{ $user->name }}</p>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label class="form-label fw-bold">Username</label>
-                            <input type="text" class="form-control" value="{{ $user->username }}" disabled>
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-1">Username</h6>
+                            <p class="fs-5 text-dark font-monospace bg-light d-inline-block px-2 rounded">
+                                {{ $user->username }}
+                            </p>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label class="form-label fw-bold">Email</label>
-                            <input type="text" class="form-control" value="{{ $user->email }}" disabled>
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-1">Email</h6>
+                            <p class="fs-5 text-dark">
+                                <a href="mailto:{{ $user->email }}" class="text-decoration-none text-dark">
+                                    {{ $user->email }}
+                                </a>
+                            </p>
                         </div>
                     </div>
 
-                    {{-- Right Column: Role & Location --}}
                     <div class="col-md-6">
-                        <div class="form-group mb-3">
-                            <label class="form-label fw-bold">Role / Jabatan</label>
-                            <input type="text" class="form-control" value="{{ $user->role->name ?? 'Tidak ada role' }}"
-                                disabled>
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-1">Role / Jabatan</h6>
+                            <p class="fs-5 fw-bold text-primary">
+                                {{ $user->role->name ?? 'Tidak ada role' }}
+                            </p>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label class="form-label fw-bold">Loket / Counter</label>
-                            <input type="text" class="form-control" value="{{ $user->counter->name ?? '-' }}" disabled>
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-1">Loket / Counter</h6>
+                            <p class="fs-5 fw-bold text-dark mb-1">
+                                {{ $user->counter->name ?? '-' }}
+                            </p>
                             @if (!$user->counter)
-                                <small class="text-muted">User ini tidak terikat dengan loket manapun
-                                    (Administrator).</small>
+                                <small class="text-muted fst-italic">
+                                    <i class="bi bi-info-circle me-1"></i> User ini tidak terikat dengan loket manapun
+                                    (Administrator).
+                                </small>
                             @endif
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label class="form-label fw-bold">Terdaftar Pada</label>
-                            <input type="text" class="form-control" value="{{ $user->created_at->format('d M Y, H:i') }}"
-                                disabled>
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-1">Terdaftar Pada</h6>
+                            <p class="text-dark">
+                                {{ $user->created_at->format('d M Y, H:i') }}
+                            </p>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="card-footer text-end">
-                <a href="{{ route('users.edit', $user->id) }}" class="btn rounded-pill btn-info text-white">
-                    <i class="bi bi-pencil-square me-1"></i> Edit Data
-                </a>
             </div>
         </div>
     </section>

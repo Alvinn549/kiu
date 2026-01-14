@@ -1,10 +1,13 @@
 // Responsive burger btn onclick
-document.querySelector(".burger-btn").addEventListener("click", (e) => {
-  e.preventDefault()
-  let navbar = document.querySelector(".main-navbar")
+const burgerBtn = document.querySelector(".burger-btn")
+if (burgerBtn) {
+  burgerBtn.addEventListener("click", (e) => {
+    e.preventDefault()
+    let navbar = document.querySelector(".main-navbar")
 
-  navbar.classList.toggle('active')
-})
+    navbar.classList.toggle('active')
+  })
+}
 
 window.onload = () => checkWindowSize()
 window.addEventListener("resize", (event) => {

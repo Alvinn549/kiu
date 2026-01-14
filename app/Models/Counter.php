@@ -11,6 +11,12 @@ class Counter extends Model
     /** @use HasFactory<\Database\Factories\CounterFactory> */
     use HasFactory, HasUlids;
 
+    public const STATUS = [
+        'open' => 'Buka',
+        'closed' => 'Tutup',
+        'break' => 'Istirahat',
+    ];
+
     protected $fillable = [
         'service_id',
         'name',

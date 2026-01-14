@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthenticationController;
+use App\Http\Controllers\CounterController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\ServiceController;
@@ -28,4 +29,5 @@ Route::group(['prefix' => 'dashboard', 'middleware' => 'auth'], function () {
     Route::resource('users', UserController::class);
     Route::resource('services', ServiceController::class);
     Route::put('services/{service}/toggle-status', [ServiceController::class, 'toggleStatus'])->name('services.toggle-status');
+    Route::resource('counters', CounterController::class);
 });

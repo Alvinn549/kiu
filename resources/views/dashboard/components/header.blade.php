@@ -91,6 +91,11 @@
                           <span><i class="bi bi-gear-fill"></i> Layanan</span>
                       </a>
                   </li>
+                  <li class="menu-item {{ request()->routeIs('counters*') ? 'active' : '' }} ">
+                      <a href="{{ route('counters.index') }}" class='menu-link'>
+                          <span><i class="bi bi-gear-fill"></i> Pemanggil</span>
+                      </a>
+                  </li>
               </ul>
           </div>
       </nav>

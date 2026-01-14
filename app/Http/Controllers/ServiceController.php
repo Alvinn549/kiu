@@ -14,7 +14,7 @@ class ServiceController extends Controller
     {
         $services = Service::latest()->get();
 
-        return view('dashboard.services.index', compact('services'));
+        return view('dashboard.service.index', compact('services'));
     }
 
     /**
@@ -22,7 +22,7 @@ class ServiceController extends Controller
      */
     public function create()
     {
-        return view('dashboard.services.create');
+        return view('dashboard.service.create');
     }
 
     /**
@@ -45,7 +45,7 @@ class ServiceController extends Controller
      */
     public function show(Service $service)
     {
-        return view('dashboard.services.show', compact('service'));
+        return view('dashboard.service.show', compact('service'));
     }
 
     /**
@@ -53,7 +53,7 @@ class ServiceController extends Controller
      */
     public function edit(Service $service)
     {
-        return view('dashboard.services.edit', compact('service'));
+        return view('dashboard.service.edit', compact('service'));
     }
 
     /**

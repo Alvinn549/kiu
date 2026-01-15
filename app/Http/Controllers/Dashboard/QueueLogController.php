@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-
 use App\Http\Requests\StoreQueueLogRequest;
 use App\Http\Requests\UpdateQueueLogRequest;
 use App\Models\QueueLog;

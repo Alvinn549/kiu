@@ -3,8 +3,8 @@
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\Dashboard\CounterController;
 use App\Http\Controllers\Dashboard\DashboardController;
-use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\Dashboard\ServiceController;
+use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\Frontend\TouchController;
 use Illuminate\Support\Facades\Route;
 

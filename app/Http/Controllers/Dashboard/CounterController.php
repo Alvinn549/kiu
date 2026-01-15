@@ -39,7 +39,7 @@ class CounterController extends Controller
             [
                 'service_id' => ['required', 'exists:services,id'],
                 'name' => ['required', 'string', 'max:255'],
-                'status' => ['required', 'in:' . implode(',', array_keys(Counter::STATUS))],
+                'status' => ['required', 'in:'.implode(',', array_keys(Counter::STATUS))],
             ]
         );
 
@@ -76,7 +76,7 @@ class CounterController extends Controller
             [
                 'service_id' => ['required', 'exists:services,id'],
                 'name' => ['required', 'string', 'max:255'],
-                'status' => ['required', 'in:' . implode(',', array_keys(Counter::STATUS))],
+                'status' => ['required', 'in:'.implode(',', array_keys(Counter::STATUS))],
             ]
         );
 

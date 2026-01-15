@@ -14,6 +14,10 @@ class Service extends Model
     protected $fillable = [
         'name',
         'code',
+        'icon',
+        'opening_time',
+        'closing_time',
+        'max_queue_per_day',
         'avg_wait_time',
         'is_active',
     ];

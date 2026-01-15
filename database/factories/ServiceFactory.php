@@ -19,6 +19,9 @@ class ServiceFactory extends Factory
         return [
             'name' => fake()->company(),
             'code' => strtoupper(fake()->bothify('??-###')),
+            'opening_time' => fake()->dateTimeBetween('today 06:00:00', 'today 12:00:00')->format('H:i:s'),
+            'closing_time' => fake()->dateTimeBetween('today 12:00:00', 'today 15:00:00')->format('H:i:s'),
+            'max_queue_per_day' => fake()->numberBetween(50, 200),
             'is_active' => fake()->boolean(80),
         ];
     }

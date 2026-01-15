@@ -2,7 +2,7 @@
 
 @section('title', 'Ambil Antrian')
 
-@section('content')
+@section('css')
     <style>
         :root {
             --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -281,7 +281,9 @@
             }
         }
     </style>
+@endsection
 
+@section('content')
     <div class="kiosk-wrapper">
         <div class="kiosk-overlay">
 
@@ -366,7 +368,9 @@
             <p class="text-white-50">Mohon tunggu sebentar</p>
         </div>
     </div>
+@endsection
 
+@section('js')
     <script>
         function updateTime() {
             const now = new Date();

@@ -87,9 +87,9 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'username' => ['required', 'string', 'max:255', 'unique:users,username,'.$user->id],
+            'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $user->id],
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,'.$user->id],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'role_id' => ['required', 'exists:roles,id'],
             'counter_id' => ['nullable', Rule::requiredIf(fn () => (int) $request->role_id == Role::ROLE_STAFF), 'exists:counters,id'],

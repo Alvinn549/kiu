@@ -15,13 +15,9 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->foreignUlid('service_id')->constrained('services')->cascadeOnDelete();
             $table->foreignUlid('counter_id')->nullable()->constrained('counters')->nullOnDelete();
-            $table->foreignUlid('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('ticket_number');
             $table->integer('sequence');
-            $table->date('date');
             $table->enum('status', ['waiting', 'called', 'serving', 'completed', 'skipped', 'cancelled']);
-            $table->string('customer_phone')->nullable();
-            $table->boolean('is_online_booking')->default(false);
             $table->timestamps();
         });
     }

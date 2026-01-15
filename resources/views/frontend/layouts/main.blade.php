@@ -16,6 +16,8 @@
 
 <body>
 
+    @include('sweetalert::alert')
+
     @yield('content')
 
     <script src="{{ asset('theme/frontend/assets/extensions/jquery/jquery.min.js') }}"></script>

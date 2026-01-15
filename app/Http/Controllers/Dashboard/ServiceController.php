@@ -64,7 +64,7 @@ class ServiceController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:50', 'unique:services,code,'.$service->id],
+            'code' => ['required', 'string', 'max:50', 'unique:services,code,' . $service->id],
         ]);
 
         $service->update($validated);

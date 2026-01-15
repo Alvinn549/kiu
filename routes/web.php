@@ -34,3 +34,4 @@ Route::group(['prefix' => 'dashboard', 'middleware' => 'auth'], function () {
 });
 
 Route::get('/touch', [TouchController::class, 'index'])->name('touch.index');
+Route::post('/touch/{service}/get-queue-number', [TouchController::class, 'getQueueNumber'])->name('touch.get-queue-number');

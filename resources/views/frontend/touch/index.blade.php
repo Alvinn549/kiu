@@ -125,7 +125,6 @@
 
         .service-card-btn:hover .service-tile {
             transform: translateY(-12px) scale(1.03);
-            /* box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); */
             background: #ffffff;
         }
 
@@ -133,6 +132,12 @@
             transform: scale(0.97) !important;
             box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1) !important;
             transition-duration: 0.1s;
+        }
+
+        .service-card-btn:disabled .service-tile {
+            opacity: 0.6;
+            transform: scale(0.95);
+            filter: grayscale(100%);
         }
 
         .tile-img-box {
@@ -172,16 +177,6 @@
             color: #64748b;
             font-size: 1.1rem;
             font-weight: 600;
-        }
-
-        .code-badge {
-            background: #e2e8f0;
-            color: #475569;
-            font-weight: 800;
-            padding: 0.35rem 0.75rem;
-            border-radius: 8px;
-            display: inline-block;
-            margin-bottom: 1rem;
         }
 
         .accent-blue {
@@ -247,6 +242,44 @@
         .scroll-btn:active {
             transform: scale(0.9);
         }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 
     <div class="kiosk-wrapper">
@@ -275,24 +308,21 @@
                         @php
                             $colors = ['accent-blue', 'accent-teal', 'accent-purple', 'accent-rose', 'accent-orange'];
                             $colorClass = $colors[$index % 5];
-
                             $defaultImage = 'https://cdn-icons-png.flaticon.com/512/2824/2824447.png';
-
-                            if ($service->image && Storage::exists('public/' . $service->image)) {
-                                $imageUrl = Storage::url($service->image);
-                            } else {
-                                $imageUrl = $defaultImage;
-                            }
+                            $imageUrl =
+                                $service->image && Storage::exists('public/' . $service->image)
+                                    ? Storage::url($service->image)
+                                    : $defaultImage;
                         @endphp
 
-                        <form action="#" method="POST" class="service-card-form h-100">
+                        <form action="{{ route('touch.get-queue-number', $service) }}" method="POST"
+                            class="service-card-form h-100">
                             @csrf
                             <input type="hidden" name="service_id" value="{{ $service->id }}">
 
-                            <button type="submit" class="service-card-btn">
+                            <button type="submit" class="service-card-btn submit-btn">
                                 <div class="service-tile {{ $colorClass }}">
                                     <div class="tile-content z-2">
-                                        <span class="code-badge">{{ $service->code }}</span>
                                         <h3>{{ $service->name }}</h3>
                                         @if ($service->avg_wait_time)
                                             <p><i class="fas fa-hourglass-half me-2 opacity-75"></i>±
@@ -301,11 +331,9 @@
                                             <p><i class="fas fa-check-circle me-2 opacity-75"></i>Layanan Tersedia</p>
                                         @endif
                                     </div>
-
                                     <div class="tile-img-box z-1">
                                         <img src="{{ $imageUrl }}" alt="{{ $service->name }} Icon">
                                     </div>
-
                                 </div>
                             </button>
                         </form>
@@ -320,18 +348,22 @@
             <div class="container-fluid px-5" style="animation: fadeInUp 1.2s ease-out;">
                 <div
                     class="d-flex justify-content-center align-items-center gap-4 opacity-75 hover-opacity-100 transition-all">
-                    <button class="scroll-btn shadow-sm" onclick="scrollGrid('left')">
-                        <i class="fas fa-chevron-left fa-lg"></i>
-                    </button>
+                    <button class="scroll-btn shadow-sm" onclick="scrollGrid('left')"><i
+                            class="fas fa-chevron-left fa-lg"></i></button>
                     <span class="text-white fw-bold small text-uppercase letter-spacing-2 mx-3">
                         <i class="bi bi-arrows-move me-2"></i> Geser untuk melihat lainnya
                     </span>
-                    <button class="scroll-btn shadow-sm" onclick="scrollGrid('right')">
-                        <i class="fas fa-chevron-right fa-lg"></i>
-                    </button>
+                    <button class="scroll-btn shadow-sm" onclick="scrollGrid('right')"><i
+                            class="fas fa-chevron-right fa-lg"></i></button>
                 </div>
             </div>
 
+        </div>
+
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="spinner mb-4"></div>
+            <h2 class="text-white fw-bold">Mencetak Tiket...</h2>
+            <p class="text-white-50">Mohon tunggu sebentar</p>
         </div>
     </div>
 
@@ -361,5 +393,36 @@
                 behavior: 'smooth'
             });
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const forms = document.querySelectorAll('.service-card-form');
+            const overlay = document.getElementById('loadingOverlay');
+
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    // Tampilkan Overlay
+                    overlay.classList.add('active');
+
+                    // Disable SEMUA tombol submit agar tidak bisa klik layanan lain juga
+                    const allButtons = document.querySelectorAll('.submit-btn');
+                    allButtons.forEach(btn => {
+                        btn.disabled = true;
+                        btn.style.pointerEvents = 'none';
+                    });
+                });
+            });
+
+            // Opsional: Jika user tekan "Back" di browser, hilangkan loader
+            window.addEventListener('pageshow', function(event) {
+                if (event.persisted) {
+                    overlay.classList.remove('active');
+                    const allButtons = document.querySelectorAll('.submit-btn');
+                    allButtons.forEach(btn => {
+                        btn.disabled = false;
+                        btn.style.pointerEvents = 'auto';
+                    });
+                }
+            });
+        });
     </script>
 @endsection

@@ -5,6 +5,8 @@
 @section('css')
     <style>
         :root {
+            --card-width: 480px;
+            --card-gap: 30px;
             --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
             --ease-smooth: cubic-bezier(0.25, 0.8, 0.25, 1);
         }
@@ -59,8 +61,8 @@
             display: grid;
             grid-template-rows: repeat(2, 1fr);
             grid-auto-flow: column;
-            grid-auto-columns: 360px;
-            gap: 30px;
+            grid-auto-columns: var(--card-width);
+            gap: var(--card-gap);
             height: 60vh;
             align-content: center;
             scroll-snap-type: x mandatory;
@@ -280,6 +282,16 @@
                 transform: rotate(360deg);
             }
         }
+
+        .nav-footer-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .nav-footer-visible {
+            opacity: 1;
+            pointer-events: all;
+        }
     </style>
 @endsection
 
@@ -347,16 +359,18 @@
                 </div>
             </div>
 
-            <div class="container-fluid px-5" style="animation: fadeInUp 1.2s ease-out;">
+            <div id="navFooter" class="container-fluid px-5 nav-footer-hidden" style="transition: opacity 0.5s ease;">
                 <div
                     class="d-flex justify-content-center align-items-center gap-4 opacity-75 hover-opacity-100 transition-all">
-                    <button class="scroll-btn shadow-sm" onclick="scrollGrid('left')"><i
-                            class="fas fa-chevron-left fa-lg"></i></button>
+                    <button class="scroll-btn shadow-sm" onclick="scrollGrid('left')">
+                        <i class="fas fa-chevron-left fa-lg"></i>
+                    </button>
                     <span class="text-white fw-bold small text-uppercase letter-spacing-2 mx-3">
                         <i class="bi bi-arrows-move me-2"></i> Geser untuk melihat lainnya
                     </span>
-                    <button class="scroll-btn shadow-sm" onclick="scrollGrid('right')"><i
-                            class="fas fa-chevron-right fa-lg"></i></button>
+                    <button class="scroll-btn shadow-sm" onclick="scrollGrid('right')">
+                        <i class="fas fa-chevron-right fa-lg"></i>
+                    </button>
                 </div>
             </div>
 
@@ -391,12 +405,45 @@
         const container = document.getElementById('scrollContainer');
 
         function scrollGrid(direction) {
-            const scrollAmount = 400;
+            // Get values dynamically from CSS Variables
+            const root = getComputedStyle(document.documentElement);
+            const cardWidth = parseInt(root.getPropertyValue('--card-width'));
+            const cardGap = parseInt(root.getPropertyValue('--card-gap'));
+
+            // Calculate exact scroll distance
+            const scrollAmount = cardWidth + cardGap;
+
             container.scrollBy({
                 left: direction === 'left' ? -scrollAmount : scrollAmount,
                 behavior: 'smooth'
             });
         }
+
+        function checkOverflow() {
+            const container = document.getElementById('scrollContainer');
+            const navFooter = document.getElementById('navFooter');
+
+            // Logic: Apakah Lebar Isi (ScrollWidth) > Lebar Layar (ClientWidth)?
+            // Kita kasih toleransi sedikit (misal 10px) untuk akurasi
+            if (container.scrollWidth > container.clientWidth + 10) {
+                // Jika overflow, Munculkan tombol
+                navFooter.classList.remove('nav-footer-hidden');
+                navFooter.classList.add('nav-footer-visible');
+            } else {
+                // Jika muat semua, Sembunyikan tombol
+                navFooter.classList.remove('nav-footer-visible');
+                navFooter.classList.add('nav-footer-hidden');
+            }
+        }
+
+        // Jalankan saat halaman selesai dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tunggu sebentar agar CSS Grid selesai render layout
+            setTimeout(checkOverflow, 100);
+
+            // Juga jalankan saat layar di-resize (misal ganti orientasi tablet)
+            window.addEventListener('resize', checkOverflow);
+        });
 
         document.addEventListener('DOMContentLoaded', function() {
             const forms = document.querySelectorAll('.service-card-form');
@@ -404,10 +451,7 @@
 
             forms.forEach(form => {
                 form.addEventListener('submit', function(e) {
-                    // Tampilkan Overlay
                     overlay.classList.add('active');
-
-                    // Disable SEMUA tombol submit agar tidak bisa klik layanan lain juga
                     const allButtons = document.querySelectorAll('.submit-btn');
                     allButtons.forEach(btn => {
                         btn.disabled = true;
@@ -416,7 +460,6 @@
                 });
             });
 
-            // Opsional: Jika user tekan "Back" di browser, hilangkan loader
             window.addEventListener('pageshow', function(event) {
                 if (event.persisted) {
                     overlay.classList.remove('active');

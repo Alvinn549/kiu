@@ -1,55 +1,93 @@
 @extends('dashboard.layouts.main')
 
-@section('title', 'Dashboard')
-
-@section('page-heading')
-    <div class="page-title">
-        <div class="row">
-            <div class="col-12 col-md-6 order-md-1 order-last">
-                <h3>Dashboard</h3>
-            </div>
-            <div class="col-12 col-md-6 order-md-2 order-first">
-                <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
-    </div>
-@endsection
+@section('title', 'Counter Dashboard')
 
 @section('css')
     <style>
         .fw-black {
-            font-weight: 900;
+            font-weight: 800;
+            letter-spacing: -1px;
         }
 
-        @keyframes pulse-blue {
+        .text-spacing-wide {
+            letter-spacing: 2px;
+        }
+
+        .btn-hover-scale {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-hover-scale:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes soft-pulse {
             0% {
-                box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.7);
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
             }
 
             70% {
-                box-shadow: 0 0 0 10px rgba(13, 110, 253, 0);
+                box-shadow: 0 0 0 15px rgba(79, 70, 229, 0);
             }
 
             100% {
-                box-shadow: 0 0 0 0 rgba(13, 110, 253, 0);
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
             }
         }
 
-        .btn-pulse {
-            animation: pulse-blue 2s infinite;
+        .btn-pulse-primary {
+            animation: soft-pulse 2s infinite;
         }
 
-        .hover-lift {
-            transition: all 0.2s ease-in-out;
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
         }
 
-        .hover-lift:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
+
+        @keyframes pulse-generic {
+            0% {
+                box-shadow: 0 0 0 0 rgba(var(--pulse-color), 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(var(--pulse-color), 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(var(--pulse-color), 0);
+            }
+        }
+
+        .status-dot-pulse {
+            --pulse-color: 25, 135, 84;
+
+            animation: pulse-generic 2s infinite;
+            border-radius: 50%;
+        }
+
+        .pulse-danger {
+            --pulse-color: 220, 53, 69;
+        }
+
+        .pulse-primary {
+            --pulse-color: 13, 110, 253;
+        }
+
+        .pulse-warning {
+            --pulse-color: 255, 193, 7;
+        }
+
+        .pulse-secondary {
+            --pulse-color: 108, 117, 125;
         }
     </style>
 @endsection
@@ -57,7 +95,9 @@
 @section('content')
     <section>
         @php
-            $counter = Auth::user()->counter;
+            $user = Auth::user();
+            $counter = $user->counter;
+            $service = $counter?->service;
             $currentStatus = $counter->status ?? 'closed';
 
             $statusColor = match ($currentStatus) {
@@ -69,115 +109,108 @@
             $statusLabel = \App\Models\Counter::STATUS[$currentStatus] ?? 'Offline';
         @endphp
 
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-body p-3">
-                <div class="row align-items-center g-3">
-                    <div class="col-12 col-md-4">
-                        <div class="d-flex align-items-center">
-                            <div class="position-relative me-4">
-                                <img src="{{ asset('theme/dashboard/assets/compiled/jpg/1.jpg') }}"
-                                    class="rounded-circle border border-2 border-secondary-subtle shadow-sm"
-                                    style="width: 60px; height: 60px; object-fit: cover;"> <span
-                                    class="position-absolute bottom-0 start-100 translate-middle p-1 bg-success border border-2 border-body rounded-circle"
-                                    data-bs-toggle="tooltip" title="Status: Online"></span>
-                            </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="card bg-white-subtle border-0 shadow-sm rounded-4 ">
+                    <div class="card-body p-4">
+                        <div class="row g-4 align-items-center">
 
-                            <div>
-                                <div class="mb-2">
-                                    <h6 class="fw-bold mb-0 text-body-emphasis">{{ Auth::user()->name }}</h6>
-                                    <small class="text-body-secondary" style="font-size: 0.75rem;">
-                                        {{ '@' . Auth::user()->username }} &bull; Staff
-                                    </small>
+                            <div class="col-12 col-md-4 position-relative">
+                                <div class="d-flex flex-column pe-md-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span
+                                            class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-2 d-flex align-items-center gap-2">
+                                            <i class="bi bi-shop-window"></i>
+                                            <span class="fw-bold">{{ $counter->name ?? 'No Counter' }}</span>
+                                        </span>
+                                    </div>
+                                    <h4 class="fw-bold mb-0 text-truncate" title="{{ $user->name }}">
+                                        {{ $user->name }}
+                                    </h4>
+                                    <small
+                                        class="text-secondary fw-medium text-truncate">{{ '@' . $user->username }}</small>
                                 </div>
 
-                                <div class="d-flex gap-2 flex-wrap">
+                                <div class="d-none d-md-block position-absolute end-0 top-50 translate-middle-y bg-light-subtle"
+                                    style="width: 1px; height: 70%;"></div>
+                            </div>
 
-                                    <div class="badge bg-warning-subtle text-warning-emphasis px-3 py-1 hover-lift"
-                                        data-bs-toggle="tooltip" title="Total Menunggu">
-                                        <i class="bi bi-clock-history me-1"></i>
-                                        <span>{{ $stats->waiting ?? 0 }}</span>
+                            <div class="col-12 col-md-3 position-relative">
+                                <div class="px-md-2">
+                                    <label class="text-uppercase text-muted fw-bold d-block mb-1"
+                                        style="font-size: 0.65rem; letter-spacing: 1px;">Layanan Aktif</label>
+
+                                    <h5 class="fw-black mb-0 text-truncate" title="{{ $service->name ?? 'Unavailable' }}">
+                                        {{ $service->name ?? 'Unavailable' }}
+                                    </h5>
+
+                                    <div class="d-flex align-items-center gap-2 mt-1">
+                                        <span
+                                            class="badge bg-light text-secondary border border-light-subtle rounded-pill fw-normal px-2"
+                                            style="font-size: 0.75rem;">
+                                            <i class="bi bi-clock me-1"></i>
+                                            {{ isset($service) ? substr($service->opening_time, 0, 5) . ' - ' . substr($service->closing_time, 0, 5) : '--:--' }}
+                                        </span>
                                     </div>
+                                </div>
 
-                                    <div class="badge bg-success-subtle text-success-emphasis px-3 py-1 hover-lift"
-                                        data-bs-toggle="tooltip" title="Total Selesai">
-                                        <i class="bi bi-check-circle-fill me-1"></i>
-                                        <span>{{ $stats->completed ?? 0 }}</span>
-                                    </div>
+                                <div class="d-none d-md-block position-absolute end-0 top-50 translate-middle-y bg-light-subtle"
+                                    style="width: 1px; height: 70%;"></div>
+                            </div>
 
-                                    <div class="badge bg-danger-subtle text-danger-emphasis px-3 py-1 hover-lift"
-                                        data-bs-toggle="tooltip" title="Total Dilewati">
-                                        <i class="bi bi-dash-circle-fill me-1"></i>
-                                        <span>{{ $stats->skipped ?? 0 }}</span>
-                                    </div>
-
-                                    <div class="badge bg-primary-subtle text-primary-emphasis px-3 py-1 hover-lift"
-                                        data-bs-toggle="tooltip" title="Rata-rata Waktu Layanan">
-                                        <i class="bi bi-stopwatch-fill me-1"></i>
-                                        <span>{{ $stats->avg_time ?? '0m' }}</span>
-                                    </div>
-
+                            <div class="col-12 col-md-2">
+                                <div class="text-start text-md-center px-md-1">
+                                    <h2 class="fw-black font-monospace mb-0 lh-1" id="live-time">--:--</h2>
+                                    <small class="text-secondary fw-medium d-block text-truncate"
+                                        id="live-date">Loading...</small>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <div class="col-12 col-md-4 text-md-center">
-                        <small class="text-uppercase text-body-secondary fw-bold"
-                            style="font-size: 0.65rem; letter-spacing: 1px;">
-                            Loket Saat Ini
-                        </small>
+                            <div class="col-12 col-md-3">
+                                <div class="dropdown w-100 ps-md-2">
+                                    <button
+                                        class="btn w-100 border border-light-subtle shadow-sm rounded-pill px-3 py-2 d-flex align-items-center justify-content-between gap-3 btn-hover-scale bg-white-subtle"
+                                        type="button" data-bs-toggle="dropdown">
 
-                        <h4 class="fw-bold text-body-emphasis mb-2 mt-1">
-                            {{ $counter->name ?? 'No Counter' }}
-                        </h4>
+                                        <div class="d-flex align-items-center gap-2 overflow-hidden">
+                                            <span
+                                                class="d-flex align-items-center justify-content-center bg-{{ $statusColor }} bg-opacity-10 rounded-circle flex-shrink-0"
+                                                style="width: 28px; height: 28px;">
+                                                <span
+                                                    class="rounded-circle status-dot-pulse pulse-{{ $statusColor }} bg-{{ $statusColor }}"
+                                                    style="width: 10px; height: 10px; box-shadow: 0 0 0 2px rgba(255,255,255,0.8);"></span>
+                                            </span>
+                                            <span class="fw-bold small text-truncate">{{ $statusLabel }}</span>
+                                        </div>
 
-                        <div class="d-flex justify-content-center">
-                            <div
-                                class="badge bg-body-tertiary text-body border border-secondary-subtle rounded-pill px-3 py-2 d-flex align-items-center gap-2 fw-normal">
-                                <i class="bi bi-calendar4-week text-primary"></i>
-                                <span id="live-date" class="small">...</span>
-                                <div class="vr mx-1"></div> <span id="live-time"
-                                    class="fw-bold font-monospace text-primary">...</span>
-                            </div>
-                        </div>
-                    </div>
+                                        <i class="bi bi-chevron-down text-muted ms-1 flex-shrink-0"
+                                            style="font-size: 0.7rem;"></i>
+                                    </button>
 
-                    <div class="col-12 col-md-4 ">
-                        <div class="dropdown">
-                            <button
-                                class="btn border rounded-pill w-100 py-2 d-flex align-items-center justify-content-between px-3"
-                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <div class="d-flex align-items-center">
-                                    <span class="rounded-circle me-2 shadow-sm bg-{{ $statusColor }}"
-                                        style="width: 10px; height: 10px;">
-                                    </span>
-                                    <span class="fw-bold text-body">{{ $statusLabel }}</span>
+                                    <ul class="dropdown-menu dropdown-menu-end w-100 shadow-lg border-0 rounded-4 p-2 mt-2">
+                                        <li class="px-3 py-2 text-uppercase text-muted fw-bold" style="font-size: 0.65rem;">
+                                            Ubah Status Loket
+                                        </li>
+                                        @foreach (\App\Models\Counter::STATUS as $key => $label)
+                                            <li>
+                                                <form action="{{ route('counters.set-status', $counter->id) }}"
+                                                    method="POST">
+                                                    @csrf @method('PUT')
+                                                    <input type="hidden" name="status" value="{{ $key }}">
+                                                    <button type="submit"
+                                                        class="dropdown-item rounded-3 py-2 d-flex align-items-center justify-content-between {{ $currentStatus == $key ? 'active fw-bold' : '' }}">
+                                                        <span>{{ $label }}</span>
+                                                        @if ($currentStatus == $key)
+                                                            <i class="bi bi-check-lg text-white mb-2"></i>
+                                                        @endif
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        @endforeach
+                                    </ul>
                                 </div>
-                                <i class="bi bi-chevron-down small mb-2"></i>
-                            </button>
+                            </div>
 
-                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 mt-2 p-2 w-100">
-                                <li class="dropdown-header text-uppercase small fw-bold text-muted mb-1">
-                                    Set Status Loket
-                                </li>
-
-                                @foreach (\App\Models\Counter::STATUS as $key => $label)
-                                    <li>
-                                        <form action="{{ route('counters.set-status', $counter->id) }}" method="POST">
-                                            @csrf
-                                            @method('PUT')
-                                            <input type="hidden" name="status" value="{{ $key }}">
-                                            <button type="submit"
-                                                class="dropdown-item rounded-3 py-2 d-flex align-items-center justify-content-between mb-1 {{ $currentStatus == $key ? 'active' : '' }}">
-                                                <span>{{ $label }}</span>
-                                                @if ($currentStatus == $key)
-                                                    <i class="bi bi-check-circle-fill mb-2"></i>
-                                                @endif
-                                            </button>
-                                        </form>
-                                    </li>
-                                @endforeach
-                            </ul>
                         </div>
                     </div>
                 </div>
@@ -185,80 +218,121 @@
         </div>
 
         <div class="row">
+            <div class="col-6 col-md-3">
+                <div class="card rounded-4 border-0 p-3 text-center btn-hover-scale">
+                    <div class="text-warning fs-4 mb-1"><i class="bi bi-hourglass-split"></i></div>
+                    <h4 class="fw-black mb-1">{{ $stats->waiting ?? 0 }}</h4>
+                    <small class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Menunggu</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card rounded-4 border-0 p-3 text-center btn-hover-scale">
+                    <div class="text-success fs-4 mb-1"><i class="bi bi-check-circle-fill"></i></div>
+                    <h4 class="fw-black mb-1">{{ $stats->completed ?? 0 }}</h4>
+                    <small class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Selesai</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card rounded-4 border-0 p-3 text-center btn-hover-scale">
+                    <div class="text-danger fs-4 mb-1"><i class="bi bi-slash-circle-fill"></i></div>
+                    <h4 class="fw-black mb-1">{{ $stats->skipped ?? 0 }}</h4>
+                    <small class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Skipped</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card rounded-4 border-0 p-3 text-center btn-hover-scale">
+                    <div class="text-primary fs-4 mb-1"><i class="bi bi-clock-history"></i></div>
+                    <h4 class="fw-black mb-1">{{ $stats->avg_time ?? '0m' }}</h4>
+                    <small class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Avg Time</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
             <div class="col-lg-8">
                 @if (!$currentQueue)
-                    <div class="card border-2 border-dashed shadow-none mb-4 bg-body-tertiary text-center"
-                        style="border-style: dashed !important; border-color: var(--bs-primary) !important;">
-                        <div class="card-body py-5">
-                            <div class="mb-4">
-                                <i class="bi bi-megaphone text-primary" style="font-size: 3rem;"></i>
+                    <div class="card rounded-4 border-0 shadow-sm text-center py-5 d-flex flex-column justify-content-center"
+                        style="min-height: 500px;">
+
+                        <div class="mb-4 position-relative">
+                            <div class="bg-primary-subtle rounded-circle d-inline-flex align-items-center justify-content-center"
+                                style="width: 100px; height: 100px;">
+                                <i class="bi bi-megaphone-fill text-primary" style="font-size: 3rem;"></i>
                             </div>
-
-                            <h4 class="fw-bold text-body-emphasis">Loket Tersedia</h4>
-
                             @if ($nextQueue)
-                                <p class="text-muted mb-4">
-                                    Antrian berikutnya tersedia. <br>
-                                    Siap memanggil tiket <strong>{{ $nextQueue->ticket_number }}</strong> ?
-                                </p>
-                                <form action="{{ route('queues.call', $nextQueue->id) }}" method="POST">
-                                    @csrf
-                                    @method('PUT')
-                                    <button type="submit"
-                                        class="btn btn-primary btn-lg rounded-pill px-5 py-3 shadow-sm btn-pulse">
-                                        <i class="bi bi-broadcast me-2"></i> Panggil {{ $nextQueue->ticket_number }}
-                                    </button>
-                                </form>
-                            @else
-                                <p class="text-muted mb-4">Belum ada antrian baru. Menunggu pengunjung...</p>
-                                <button class="btn btn-secondary btn-lg rounded-pill px-5 py-3 shadow-sm" disabled>
-                                    <i class="bi bi-hourglass-split me-2"></i> Menunggu Antrian
-                                </button>
+                                <span
+                                    class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-danger border border-white">
+                                    New!
+                                </span>
                             @endif
                         </div>
+
+                        <h3 class="fw-bold mb-2">Loket Tersedia</h3>
+
+                        @if ($nextQueue)
+                            <p class="text-muted mb-4">
+                                Antrian berikutnya <span class="fw-bold">{{ $nextQueue->ticket_number }}</span>
+                                siap dipanggil.
+                            </p>
+                            <div class="d-flex justify-content-center">
+                                <form action="{{ route('queues.call', $nextQueue->id) }}" method="POST">
+                                    @csrf @method('PUT')
+                                    <button type="submit"
+                                        class="btn btn-primary btn-lg rounded-pill px-5 py-3 shadow-lg btn-pulse-primary btn-hover-scale fw-bold">
+                                        <i class="bi bi-broadcast me-2"></i> Panggil Sekarang
+                                    </button>
+                                </form>
+                            </div>
+                        @else
+                            <p class="text-muted mb-4 px-5">Belum ada antrian baru. Silahkan istirahat sejenak atau
+                                menunggu
+                                pengunjung.</p>
+                            <div>
+                                <button class="btn btn-light text-muted border rounded-pill px-4 py-2" disabled>
+                                    <span class="spinner-border spinner-border-sm me-2"></span> Menunggu Data...
+                                </button>
+                            </div>
+                        @endif
                     </div>
                 @else
-                    <div class="card border-0 shadow-lg rounded-4 ">
+                    <div class="card rounded-4 shadow-sm border-0" style="min-height: 550px;">
                         <div
-                            class="card-header border-0 pt-4 px-4 d-flex justify-content-between align-items-center bg-transparent">
-                            <div>
-                                <span
-                                    class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3 py-2">
-                                    <span class="spinner-grow spinner-grow-sm me-1" role="status"
-                                        aria-hidden="true"></span>
-                                    Sedang Melayani
-                                </span>
-                            </div>
-                            <div class="text-muted bg-body-secondary rounded-pill px-3 py-1">
-                                <i class="bi bi-stopwatch me-2"></i>
-                                <span class="fw-bold font-monospace text-body-emphasis" id="timer">00:00:00</span>
-                            </div>
+                            class="card-header border-0 bg-transparent pt-4 px-4 d-flex justify-content-between align-items-center">
+                            <span
+                                class="badge rounded-pill bg-white-subtle text-success shadow-sm px-3 py-2 border border-success-subtle d-flex align-items-center gap-2">
+                                <span class="spinner-grow spinner-grow-sm text-success" role="status"></span>
+                                <span class="fw-bold">Sedang Melayani</span>
+                            </span>
+
+                            <span
+                                class="badge rounded-pill bg-white-subtle text-primary shadow-sm px-3 py-2 border border-primary-subtle d-flex align-items-center gap-2">
+                                <span class="bi bi-stopwatch text-primary" role="status"></span>
+                                <span class="fw-bold" id="timer">00:00:00</span>
+                            </span>
+
                         </div>
 
                         <div class="card-body text-center d-flex flex-column justify-content-center">
-
-                            <div class="mb-4">
-                                <small class="text-uppercase text-muted fw-bold letter-spacing-2 mb-2 d-block">Nomor
-                                    Antrian</small>
-                                <div class="d-inline-block position-relative">
-                                    <h1 class="display-1 fw-black text-heading mb-0"
-                                        style="font-size: 6rem; font-weight: 800; letter-spacing: -3px; line-height: 1;">
-                                        {{ $currentQueue->ticket_number ?? '--' }}
-                                    </h1>
-                                </div>
+                            <div class="mb-5 position-relative">
+                                <p class="text-uppercase text-muted fw-bold text-spacing-wide mb-0 small">Nomor Antrian</p>
+                                <h1 class="mb-0"
+                                    style="font-size: 7rem; line-height: 1; text-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                                    {{ $currentQueue->ticket_number ?? '--' }}
+                                </h1>
                             </div>
 
-                            <div class="row g-3 mb-4">
+                            <div class="row g-3 px-md-5 mb-5">
                                 <div class="col-6">
-                                    <button class="btn btn-warning w-100 btn-lg text-white shadow-sm rounded-3">
-                                        <i class="bi bi-arrow-counterclockwise fs-4"></i>
-                                        <span class="fw-bold small">Panggil Ulang</span>
+                                    <button
+                                        class="btn btn-white text-warning border border-warning w-100 py-3 rounded-4 btn-hover-scale">
+                                        <i class="bi bi-arrow-counterclockwise fs-4 me-2"></i>
+                                        <span class="fw-bold fs-5">Panggil Ulang</span>
                                     </button>
                                 </div>
                                 <div class="col-6">
-                                    <button class="btn btn-success w-100 btn-lg shadow rounded-3">
-                                        <i class="bi bi-check-lg fs-4"></i>
-                                        <span class="fw-bold small">Selesaikan</span>
+                                    <button class="btn btn-success w-100 py-3 rounded-4 btn-hover-scale">
+                                        <i class="bi bi-check-lg fs-4 me-2"></i>
+                                        <span class="fw-bold fs-5">Selesaikan</span>
                                     </button>
                                 </div>
                             </div>
@@ -283,77 +357,78 @@
                     </div>
                 @endif
             </div>
-
             <div class="col-lg-4">
-                <div class="card  shadow-sm border-0">
-                    <div class="card-header p-2">
-                        <ul class="nav nav-pills nav-fill" id="pills-tab" role="tablist">
+                <div class="card shadow-sm border-0 rounded-4" style="min-height: 550px; max-height: 550px;">
+                    <div class="card-header bg-transparent border-0 p-2">
+                        <ul class="nav nav-pills nav-fill bg-light-subtle p-1 rounded-pill" id="pills-tab"
+                            role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link active fw-bold " id="pills-waiting-tab" data-bs-toggle="pill"
-                                    data-bs-target="#pills-waiting" type="button" role="tab">
-                                    <i class="bi bi-people me-1"></i> Menunggu
+                                <button class="nav-link active rounded-pill fw-bold small py-2" id="pills-waiting-tab"
+                                    data-bs-toggle="pill" data-bs-target="#pills-waiting" type="button" role="tab">
+                                    Menunggu ({{ count($waitingList) }})
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link fw-bold " id="pills-history-tab" data-bs-toggle="pill"
-                                    data-bs-target="#pills-history" type="button" role="tab">
-                                    <i class="bi bi-clock-history me-1"></i> Riwayat
+                                <button class="nav-link rounded-pill fw-bold small py-2" id="pills-history-tab"
+                                    data-bs-toggle="pill" data-bs-target="#pills-history" type="button" role="tab">
+                                    Riwayat
                                 </button>
                             </li>
                         </ul>
                     </div>
-                    <div class="card-body rounded p-0 mt-2" style="max-height: 500px; overflow-y: auto;">
+
+                    <div class="card-body p-0 custom-scroll" style="overflow-y: auto;">
                         <div class="tab-content" id="pills-tabContent">
                             <div class="tab-pane fade show active" id="pills-waiting" role="tabpanel">
-                                <ul class="list-group list-group-flush">
+                                <div class="list-group list-group-flush px-2 pb-2">
                                     @forelse ($waitingList as $q)
-                                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                        <div
+                                            class="list-group-item border-0 rounded-3 mb-1 p-3 d-flex justify-content-between align-items-center bg-transparent hover-bg-light">
                                             <div class="d-flex align-items-center">
-                                                <div class="bg-body-secondary rounded-circle d-flex align-items-center justify-content-center me-3 text-body fw-bold"
-                                                    style="width: 40px; height: 40px;">
+                                                <div class="bg-white-subtle shadow-sm rounded-circle d-flex align-items-center justify-content-center me-3 text-primary fw-bold border"
+                                                    style="width: 42px; height: 42px;">
                                                     {{ $loop->iteration }}
                                                 </div>
                                                 <div>
-                                                    <h5 class="mb-0 fw-bold">{{ $q->ticket_number }}</h5>
-                                                    <small class="text-muted">Walk-in</small>
+                                                    <h6 class="mb-0 fw-black">{{ $q->ticket_number }}</h6>
+                                                    <small class="text-muted" style="font-size: 0.75rem;">Walk-in
+                                                        Customer</small>
                                                 </div>
                                             </div>
-                                            <button class="btn btn-sm btn-outline-primary rounded-circle"
+                                            <button class="btn btn-light btn-sm rounded-circle shadow-sm text-primary"
                                                 data-bs-toggle="tooltip" title="Panggil Langsung">
                                                 <i class="bi bi-play-fill"></i>
                                             </button>
-                                        </li>
+                                        </div>
                                     @empty
-                                        <div class="text-center py-5">
-                                            <p class="text-muted small">Tidak ada antrian menunggu</p>
+                                        <div class="text-center py-5 opacity-50">
+                                            <i class="bi bi-inbox fs-1 mb-2 d-block"></i>
+                                            <small>Tidak ada antrian menunggu</small>
                                         </div>
                                     @endforelse
-                                </ul>
+                                </div>
                             </div>
 
                             <div class="tab-pane fade" id="pills-history" role="tabpanel">
-                                <ul class="list-group list-group-flush">
+                                <div class="list-group list-group-flush px-2 pb-2">
                                     @forelse ($historyList as $h)
-                                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                                            <div>
-                                                <span class="fw-bold text-muted">{{ $h->ticket_number }}</span>
-                                            </div>
-                                            <div>
-                                                @if ($h->status == 'completed')
-                                                    <span
-                                                        class="badge bg-success-subtle text-success-emphasis rounded-pill">Selesai</span>
-                                                @else
-                                                    <span
-                                                        class="badge bg-danger-subtle text-danger-emphasis rounded-pill">Skipped</span>
-                                                @endif
-                                            </div>
-                                        </li>
+                                        <div
+                                            class="list-group-item border-0 rounded-3 mb-1 p-3 d-flex justify-content-between align-items-center bg-transparent">
+                                            <span class="fw-bold text-secondary">{{ $h->ticket_number }}</span>
+                                            @if ($h->status == 'completed')
+                                                <span
+                                                    class="badge bg-success-subtle text-success rounded-pill px-3">Selesai</span>
+                                            @else
+                                                <span
+                                                    class="badge bg-danger-subtle text-danger rounded-pill px-3">Skipped</span>
+                                            @endif
+                                        </div>
                                     @empty
-                                        <div class="text-center py-5">
-                                            <p class="text-muted small">Tidak ada riwayat antrian</p>
+                                        <div class="text-center py-5 opacity-50">
+                                            <small>Belum ada riwayat hari ini</small>
                                         </div>
                                     @endforelse
-                                </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -366,6 +441,12 @@
 @section('js')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Enable Bootstrap Tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            })
+
             const queueId = "{{ $currentQueue->id ?? 'no-queue' }}";
             const isServing = "{{ isset($currentQueue) }}";
             const serverStartTime = parseInt("{{ $serverTimeMs ?? 0 }}");
@@ -375,17 +456,14 @@
 
             function formatTime(totalSeconds) {
                 totalSeconds = Math.max(0, Math.floor(totalSeconds));
-
                 const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
                 const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
                 const s = (totalSeconds % 60).toString().padStart(2, '0');
-
                 return `${h}:${m}:${s}`;
             }
 
             function startTimer() {
                 let startTimestamp = localStorage.getItem(storageKey);
-
                 if (serverStartTime > 0) {
                     if (!startTimestamp || Math.abs(startTimestamp - serverStartTime) > 5000) {
                         startTimestamp = serverStartTime;
@@ -397,14 +475,10 @@
                 }
 
                 if (intervalId) clearInterval(intervalId);
-
                 intervalId = setInterval(() => {
                     const now = Date.now();
                     const diffInSeconds = (now - startTimestamp) / 1000;
-
-                    if (timerEl) {
-                        timerEl.innerText = formatTime(diffInSeconds);
-                    }
+                    if (timerEl) timerEl.innerText = formatTime(diffInSeconds);
                 }, 1000);
             }
 
@@ -417,19 +491,16 @@
 
             function updateClock() {
                 const now = new Date();
-
                 const optionsDate = {
                     weekday: 'long',
                     day: 'numeric',
                     month: 'short'
                 };
                 const dateString = now.toLocaleDateString('id-ID', optionsDate);
-
-                const h = now.getHours().toString().padStart(2, '0');
-                const m = now.getMinutes().toString().padStart(2, '0');
-                const s = now.getSeconds().toString().padStart(2, '0');
-
-                const timeString = `${h}:${m}:${s}`;
+                const timeString = now.toLocaleTimeString('id-ID', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
 
                 const timeEl = document.getElementById('live-time');
                 const dateEl = document.getElementById('live-date');

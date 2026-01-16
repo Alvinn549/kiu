@@ -252,13 +252,10 @@
             <div class="col-lg-8">
                 @if (!$currentQueue)
                     <div class="card rounded-4 border-0 shadow-sm text-center py-5 d-flex flex-column justify-content-center"
-                        style="min-height: 500px;">
+                        style="min-height: 550px;">
 
                         <div class="mb-4 position-relative">
-                            <div class="bg-primary-subtle rounded-circle d-inline-flex align-items-center justify-content-center"
-                                style="width: 100px; height: 100px;">
-                                <i class="bi bi-megaphone-fill text-primary" style="font-size: 3rem;"></i>
-                            </div>
+                            <i class="bi bi-megaphone-fill text-primary" style="font-size: 3rem;"></i>
                             @if ($nextQueue)
                                 <span
                                     class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-danger border border-white">
@@ -278,7 +275,7 @@
                                 <form action="{{ route('queues.call', $nextQueue->id) }}" method="POST">
                                     @csrf @method('PUT')
                                     <button type="submit"
-                                        class="btn btn-primary btn-lg rounded-pill px-5 py-3 shadow-lg btn-pulse-primary btn-hover-scale fw-bold">
+                                        class="btn btn-primary btn-lg rounded-pill px-5 py-3 shadow-lg btn-pulse-primary fw-bold">
                                         <i class="bi bi-broadcast me-2"></i> Panggil Sekarang
                                     </button>
                                 </form>
@@ -288,7 +285,7 @@
                                 menunggu
                                 pengunjung.</p>
                             <div>
-                                <button class="btn btn-light text-muted border rounded-pill px-4 py-2" disabled>
+                                <button class="btn text-muted border rounded-pill px-4 py-2" disabled>
                                     <span class="spinner-border spinner-border-sm me-2"></span> Menunggu Data...
                                 </button>
                             </div>
@@ -401,8 +398,10 @@
                                             </button>
                                         </div>
                                     @empty
-                                        <div class="text-center py-5 opacity-50">
-                                            <i class="bi bi-inbox fs-1 mb-2 d-block"></i>
+                                        <div class="text-center mt-5 opacity-50">
+                                            <i class="bi bi-inbox fs-1 me-2"></i>
+                                        </div>
+                                        <div class="text-center opacity-50">
                                             <small>Tidak ada antrian menunggu</small>
                                         </div>
                                     @endforelse
@@ -424,8 +423,11 @@
                                             @endif
                                         </div>
                                     @empty
-                                        <div class="text-center py-5 opacity-50">
-                                            <small>Belum ada riwayat hari ini</small>
+                                        <div class="text-center mt-5 opacity-50">
+                                            <i class="bi bi-inbox fs-1 me-2"></i>
+                                        </div>
+                                        <div class="text-center opacity-50">
+                                            <small>Tidak ada riwayat antrian</small>
                                         </div>
                                     @endforelse
                                 </div>
@@ -441,12 +443,6 @@
 @section('js')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Enable Bootstrap Tooltips
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl)
-            })
-
             const queueId = "{{ $currentQueue->id ?? 'no-queue' }}";
             const isServing = "{{ isset($currentQueue) }}";
             const serverStartTime = parseInt("{{ $serverTimeMs ?? 0 }}");
@@ -491,16 +487,20 @@
 
             function updateClock() {
                 const now = new Date();
+
                 const optionsDate = {
                     weekday: 'long',
                     day: 'numeric',
                     month: 'short'
                 };
+
                 const dateString = now.toLocaleDateString('id-ID', optionsDate);
-                const timeString = now.toLocaleTimeString('id-ID', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
+
+                const h = now.getHours().toString().padStart(2, '0');
+                const m = now.getMinutes().toString().padStart(2, '0');
+                const s = now.getSeconds().toString().padStart(2, '0');
+
+                const timeString = `${h}:${m}:${s}`;
 
                 const timeEl = document.getElementById('live-time');
                 const dateEl = document.getElementById('live-date');

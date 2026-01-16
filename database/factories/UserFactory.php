@@ -25,12 +25,9 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
-        $role_id = Role::inRandomOrder()->first()->id;
-        $counter_id = $role_id != Role::ROLE_ADMIN ? Counter::inRandomOrder()->first()->id : null;
-
         return [
-            'role_id' => $role_id,
-            'counter_id' => $counter_id,
+            'role_id' => Role::ROLE_STAFF,
+            'counter_id' => Counter::inRandomOrder()->first()->id,
             'username' => fake()->unique()->userName(),
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),

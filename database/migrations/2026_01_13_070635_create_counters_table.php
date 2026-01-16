@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('counters', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->foreignUlid('service_id')->nullable()->constrained('services')->nullableOnDelete();
+            $table->foreignUlid('service_id')->constrained('services')->cascadeOnDelete();
             $table->string('name');
             $table->enum('status', ['open', 'closed', 'break'])->default('closed');
             $table->timestamps();

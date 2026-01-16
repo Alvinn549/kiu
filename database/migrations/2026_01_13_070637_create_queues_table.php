@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('queues', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->foreignUlid('service_id')->constrained('services')->cascadeOnDelete();
-            $table->foreignUlid('counter_id')->nullable()->constrained('counters')->nullOnDelete();
+            $table->foreignUlid('service_id')->nullable()->constrained('services')->onDelete('set null');
+            $table->foreignUlid('counter_id')->nullable()->constrained('counters')->onDelete('set null');
             $table->string('ticket_number');
             $table->integer('sequence');
             $table->enum('status', ['waiting', 'called', 'serving', 'completed', 'skipped', 'cancelled']);

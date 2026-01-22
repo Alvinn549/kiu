@@ -25,22 +25,4 @@ class DashboardController extends Controller
     {
         return view('dashboard.admin_index');
     }
-
-    private function staffDashboard()
-    {
-        $user = Auth::user();
-
-        if (! $user->counter) {
-            abort(403, 'User tidak terhubung dengan counter.');
-        }
-
-        $counter = $user->counter;
-        $service = $counter->service;
-
-        return view('dashboard.staff_index', compact(
-            'user',
-            'counter',
-            'service',
-        ));
-    }
 }

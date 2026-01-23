@@ -284,7 +284,7 @@
 
     @php
         $settings = (object) [
-            'media_type' => 'iamge',
+            'media_type' => 'image',
             'video_url' => 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
             'slideshow_images' => [
                 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=2000&auto=format&fit=crop',
@@ -305,7 +305,7 @@
         ]);
     @endphp
 
-    <div x-data="broadcastSystem()" x-init="initSystem()" class="broadcast-grid">
+    <div x-data="broadcastSystem" x-init="initSystem()" class="broadcast-grid">
 
         <div class="header-section">
             <div class="brand-wrapper">

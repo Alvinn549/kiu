@@ -11,6 +11,10 @@
     <link rel="stylesheet" href="{{ asset('theme/frontend/assets/bootstrap-5.2.3/css/bootstrap.min.css') }}">
     <link rel="stylesheet"
         href="{{ asset('theme/frontend/assets/extensions/@fortawesome/fontawesome-free/css/all.min.css') }}">
+
+    @vite(['resources/css/app.css'])
+    @vite(['resources/js/app.js'])
+
     @yield('css')
 </head>
 

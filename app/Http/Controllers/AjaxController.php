@@ -249,4 +249,22 @@ class AjaxController extends Controller
             'message' => 'Status layanan berhasil diubah.',
         ], 200);
     }
+
+    public function getCurrentQueuesForDisplay()
+    {
+        $today = now()->toDateString();
+
+        $currentQueues = Queue::with('service')
+            ->whereIn('status', [
+                Queue::STATUS_CALLED,
+                Queue::STATUS_SERVING,
+            ])
+            ->whereDate('created_at', $today)
+            ->orderBy('updated_at')
+            ->get();
+
+        return response()->json([
+            'currentQueues' => $currentQueues,
+        ], 200);
+    }
 }

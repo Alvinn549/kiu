@@ -6,6 +6,7 @@ use App\Http\Controllers\Dashboard\CounterController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\ServiceController;
 use App\Http\Controllers\Dashboard\UserController;
+use App\Http\Controllers\Frontend\DisplayController;
 use App\Http\Controllers\Frontend\TouchController;
 use Illuminate\Support\Facades\Route;
 
@@ -58,7 +59,12 @@ Route::group(['prefix' => 'ajax'], function () {
 
     Route::put('/services/{service}/toggle-status', [AjaxController::class, 'toggleStatusService'])
         ->name('ajax.toggle-status-service');
+
+    Route::get('/display/current-queues', [AjaxController::class, 'getCurrentQueuesForDisplay'])
+        ->name('ajax.display.current-queues');
 });
 
 Route::get('/touch', [TouchController::class, 'index'])->name('touch.index');
 Route::post('/touch/{service}/get-queue-number', [TouchController::class, 'getQueueNumber'])->name('touch.get-queue-number');
+
+Route::get('/display', [DisplayController::class, 'index'])->name('display.index');

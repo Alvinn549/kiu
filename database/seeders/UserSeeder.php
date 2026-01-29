@@ -25,10 +25,9 @@ class UserSeeder extends Seeder
 
         User::create([
             'role_id' => Role::COUNTER,
-            'counter_id' => '01KFQ29GGX80S41P7WDP91QNQA',
-            'username' => 'loket1',
-            'name' => 'Loket1',
-            'email' => 'loket1@example.com',
+            'username' => 'loket',
+            'name' => 'Loket',
+            'email' => 'loket@example.com',
             'password' => bcrypt('password'),
             'email_verified_at' => now(),
             'remember_token' => uniqid(),

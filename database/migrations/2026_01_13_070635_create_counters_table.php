@@ -15,7 +15,6 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->foreignUlid('service_id')->constrained('services')->cascadeOnDelete();
             $table->string('name');
-            $table->enum('status', ['open', 'closed', 'break'])->default('closed');
             $table->timestamps();
         });
     }

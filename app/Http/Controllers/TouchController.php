@@ -6,6 +6,7 @@ use App\Events\GotQueue;
 use App\Models\Queue;
 use App\Models\QueueLog;
 use App\Models\Service;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use RealRashid\SweetAlert\Facades\Alert;
@@ -14,12 +15,10 @@ class TouchController extends Controller
 {
     public function index()
     {
-        $services = Service::active()->latest()->get();
-
-        return view('frontend.touch.index', compact('services'));
+        return view('frontend.touch.index');
     }
 
-    public function getQueueNumber(Service $service)
+    public function getQueueNumber(Service $service, Request $request)
     {
         try {
             $now = now();

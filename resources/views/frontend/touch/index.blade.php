@@ -296,180 +296,244 @@
 @endsection
 
 @section('content')
-    <div class="kiosk-wrapper">
+    <div class="kiosk-wrapper" x-data="kioskApp()" x-init="initApp()">
         <div class="kiosk-overlay">
-
             <div class="container-fluid px-5" style="animation: fadeInUp 1s ease-out;">
                 <div class="d-flex justify-content-between align-items-end pb-4">
                     <div class="text-white">
-                        <h1 class="fw-black display-5 mb-1" style="font-weight: 900; letter-spacing: -1px;">Layanan Antrian
+                        <h1 class="fw-black display-5 mb-1" style="font-weight: 900; letter-spacing: -1px;">
+                            Layanan Antrian
                         </h1>
                         <p class="lead opacity-75 mb-0 fs-4">Silakan sentuh layanan yang Anda butuhkan</p>
                     </div>
+
                     <div class="text-end text-white">
-                        <div class="display-4 fw-bold font-monospace mb-0" style="line-height: 1;" id="clock">--:--
+                        <div class="display-4 fw-bold font-monospace mb-0" style="line-height: 1;" x-text="time">
+                            --:--
                         </div>
-                        <small class="text-uppercase letter-spacing-2 opacity-75 fw-bold" id="date">Memuat
-                            waktu...</small>
+                        <small class="text-uppercase letter-spacing-2 opacity-75 fw-bold" x-text="date">
+                            Memuat waktu...
+                        </small>
                     </div>
                 </div>
                 <hr class="border-white opacity-25 mt-0">
             </div>
 
-            <div class="slider-viewport" id="scrollContainer">
-                <div class="cards-grid">
-                    @forelse($services as $index => $service)
-                        @php
-                            $colors = ['accent-blue', 'accent-teal', 'accent-purple', 'accent-rose', 'accent-orange'];
-                            $colorClass = $colors[$index % 5];
-                            $defaultImage = 'https://cdn-icons-png.flaticon.com/512/2824/2824447.png';
-                            $imageUrl =
-                                $service->image && Storage::exists('public/' . $service->image)
-                                    ? Storage::url($service->image)
-                                    : $defaultImage;
-                        @endphp
+            <div class="slider-viewport" id="scrollContainer" @scroll.debounce="checkOverflow">
 
-                        <form action="{{ route('touch.get-queue-number', $service) }}" method="POST"
-                            class="service-card-form h-100">
-                            @csrf
-                            <input type="hidden" name="service_id" value="{{ $service->id }}">
+                <template x-if="isLoading">
+                    <div class="col-span-full text-white text-center p-5">
+                        <i class="fas fa-spinner fa-spin fa-3x mb-3"></i>
+                        <p>Memuat Layanan...</p>
+                    </div>
+                </template>
 
-                            <button type="submit" class="service-card-btn submit-btn">
-                                <div class="service-tile {{ $colorClass }}">
-                                    <div class="tile-content z-2">
-                                        <h3>{{ $service->name }}</h3>
-                                        @if ($service->avg_wait_time)
-                                            <p><i class="fas fa-hourglass-half me-2 opacity-75"></i>±
-                                                {{ $service->avg_wait_time }} Menit</p>
-                                        @else
-                                            <p><i class="fas fa-check-circle me-2 opacity-75"></i>Layanan Tersedia</p>
-                                        @endif
+                <template x-if="!isLoading && services.length > 0">
+                    <div class="cards-grid">
+                        <template x-for="(service, index) in services" :key="service.id">
+                            <div class="service-card-wrapper h-100">
+                                <button type="button" class="service-card-btn submit-btn"
+                                    @click="getQueueNumber(service.id)">
+
+                                    <div class="service-tile" :class="getColorClass(index)">
+                                        <div class="tile-content z-2">
+                                            <h3 x-text="service.name"></h3>
+
+                                            <template x-if="service.avg_wait_time">
+                                                <p>
+                                                    <i class="fas fa-hourglass-half me-2 opacity-75"></i>
+                                                    <span>± <span x-text="service.avg_wait_time"></span> Menit</span>
+                                                </p>
+                                            </template>
+
+                                            <template x-if="!service.avg_wait_time">
+                                                <p><i class="fas fa-check-circle me-2 opacity-75"></i>Layanan Tersedia</p>
+                                            </template>
+                                        </div>
+
+                                        <div class="tile-img-box z-1">
+                                            <img :src="service.image_url ||
+                                                'https://cdn-icons-png.flaticon.com/512/2824/2824447.png'"
+                                                :alt="service.name">
+                                        </div>
                                     </div>
-                                    <div class="tile-img-box z-1">
-                                        <img src="{{ $imageUrl }}" alt="{{ $service->name }} Icon">
-                                    </div>
-                                </div>
-                            </button>
-                        </form>
-                    @empty
-                        <div class="text-white p-5" style="grid-column: span 2;">
-                            <h3>Belum ada layanan aktif</h3>
-                        </div>
-                    @endforelse
-                </div>
+                                </button>
+                            </div>
+
+                        </template>
+                    </div>
+                </template>
+
+                <template x-if="!isLoading && services.length === 0">
+                    <div class="col-span-full text-white text-center p-5">
+                        <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                        <p>Tidak ada layanan yang tersedia saat ini.</p>
+                    </div>
+                </template>
+
             </div>
 
-            <div id="navFooter" class="container-fluid px-5 nav-footer-hidden" style="transition: opacity 0.5s ease;">
+            <div class="container-fluid px-5 nav-footer-hidden"
+                :class="{ 'nav-footer-visible': hasOverflow, 'nav-footer-hidden': !hasOverflow }"
+                style="transition: opacity 0.5s ease;">
                 <div
                     class="d-flex justify-content-center align-items-center gap-4 opacity-75 hover-opacity-100 transition-all">
-                    <button class="scroll-btn shadow-sm" onclick="scrollGrid('left')">
+                    <button class="scroll-btn shadow-sm" @click="scrollGrid('left')">
                         <i class="fas fa-chevron-left fa-lg"></i>
                     </button>
                     <span class="text-white fw-bold small text-uppercase letter-spacing-2 mx-3">
                         <i class="bi bi-arrows-move me-2"></i> Geser untuk melihat lainnya
                     </span>
-                    <button class="scroll-btn shadow-sm" onclick="scrollGrid('right')">
+                    <button class="scroll-btn shadow-sm" @click="scrollGrid('right')">
                         <i class="fas fa-chevron-right fa-lg"></i>
                     </button>
                 </div>
             </div>
-
         </div>
 
-        <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-overlay" :class="{ 'active': isSubmitting }">
             <div class="spinner mb-4"></div>
-            <h2 class="text-white fw-bold">Mencetak Tiket...</h2>
-            <p class="text-white-50">Mohon tunggu sebentar</p>
+            <h2 class="text-white fw-bold">Memproses...</h2>
         </div>
+
+        <div class="loading-overlay" :class="{ 'active': showSuccess }"
+            style="background: rgba(40, 167, 69, 0.95) !important;">
+            <i class="fas fa-print fa-4x text-white mb-4"></i>
+            <h2 class="text-white fw-bold">Tiket Dicetak!</h2>
+            <h1 class="display-1 text-white fw-black my-3" x-text="ticketResult"></h1>
+            <p class="text-white lead">Silakan ambil tiket Anda.</p>
+        </div>
+
     </div>
 @endsection
 
 @section('js')
     <script>
-        function updateTime() {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleTimeString('id-ID', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            document.getElementById('date').innerText = now.toLocaleDateString('id-ID', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            });
-        }
-        setInterval(updateTime, 1000);
-        updateTime();
+        function kioskApp() {
+            return {
+                services: [],
+                isLoading: true,
+                isSubmitting: false,
+                showSuccess: false,
+                ticketResult: '',
+                hasOverflow: false,
+                time: '--:--',
+                date: 'Memuat...',
+                colors: ['accent-blue', 'accent-teal', 'accent-purple', 'accent-rose', 'accent-orange'],
 
-        const container = document.getElementById('scrollContainer');
+                initApp() {
+                    this.updateTime();
+                    setInterval(() => this.updateTime(), 1000);
 
-        function scrollGrid(direction) {
-            // Get values dynamically from CSS Variables
-            const root = getComputedStyle(document.documentElement);
-            const cardWidth = parseInt(root.getPropertyValue('--card-width'));
-            const cardGap = parseInt(root.getPropertyValue('--card-gap'));
+                    this.fetchServices();
 
-            // Calculate exact scroll distance
-            const scrollAmount = cardWidth + cardGap;
+                    Echo.channel('public-channel')
+                        .listen('.QueueUpdated', (e) => {
+                            console.log('WebSocket Event Received:', e);
+                            this.refreshData();
+                        });
 
-            container.scrollBy({
-                left: direction === 'left' ? -scrollAmount : scrollAmount,
-                behavior: 'smooth'
-            });
-        }
+                    window.addEventListener('resize', () => this.checkOverflow());
+                },
 
-        function checkOverflow() {
-            const container = document.getElementById('scrollContainer');
-            const navFooter = document.getElementById('navFooter');
+                async fetchServices() {
+                    try {
+                        let url = "{{ route('ajax.touch') }}";
+                        let response = await fetch(url);
+                        let data = await response.json();
+                        this.services = data;
+                        this.$nextTick(() => this.checkOverflow());
+                    } catch (error) {
+                        console.error('Error fetching services:', error);
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
 
-            // Logic: Apakah Lebar Isi (ScrollWidth) > Lebar Layar (ClientWidth)?
-            // Kita kasih toleransi sedikit (misal 10px) untuk akurasi
-            if (container.scrollWidth > container.clientWidth + 10) {
-                // Jika overflow, Munculkan tombol
-                navFooter.classList.remove('nav-footer-hidden');
-                navFooter.classList.add('nav-footer-visible');
-            } else {
-                // Jika muat semua, Sembunyikan tombol
-                navFooter.classList.remove('nav-footer-visible');
-                navFooter.classList.add('nav-footer-hidden');
-            }
-        }
+                refreshData() {
+                    this.fetchServices();
+                },
 
-        // Jalankan saat halaman selesai dimuat
-        document.addEventListener('DOMContentLoaded', function() {
-            // Tunggu sebentar agar CSS Grid selesai render layout
-            setTimeout(checkOverflow, 100);
+                async getQueueNumber(serviceId) {
+                    if (this.isSubmitting) return;
 
-            // Juga jalankan saat layar di-resize (misal ganti orientasi tablet)
-            window.addEventListener('resize', checkOverflow);
-        });
+                    this.isSubmitting = true;
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const forms = document.querySelectorAll('.service-card-form');
-            const overlay = document.getElementById('loadingOverlay');
+                    var actionUrlTemplate = "{{ route('ajax.touch.get-queue-number', ['service' => ':ID']) }}";
+                    const actionUrl = actionUrlTemplate.replace(':ID', serviceId);
 
-            forms.forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    overlay.classList.add('active');
-                    const allButtons = document.querySelectorAll('.submit-btn');
-                    allButtons.forEach(btn => {
-                        btn.disabled = true;
-                        btn.style.pointerEvents = 'none';
+                    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                    try {
+                        const response = await fetch(actionUrl, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': token,
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        const result = await response.json();
+
+                        if (!response.ok) {
+                            throw new Error(result.message || 'Gagal mengambil antrean');
+                        }
+
+                        this.isSubmitting = false;
+                        this.ticketResult = result.ticket_number;
+                        this.showSuccess = true;
+
+                        setTimeout(() => {
+                            this.showSuccess = false;
+                            this.ticketResult = '';
+                        }, 3000);
+
+                    } catch (error) {
+                        console.error('Submission Error:', error);
+                        alert('Terjadi kesalahan: ' + error.message);
+                        this.isSubmitting = false;
+                    }
+                },
+
+                getColorClass(index) {
+                    return this.colors[index % this.colors.length];
+                },
+
+                updateTime() {
+                    const now = new Date();
+                    this.time = now.toLocaleTimeString('id-ID', {
+                        hour: '2-digit',
+                        minute: '2-digit'
                     });
-                });
-            });
+                    this.date = now.toLocaleDateString('id-ID', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                    });
+                },
 
-            window.addEventListener('pageshow', function(event) {
-                if (event.persisted) {
-                    overlay.classList.remove('active');
-                    const allButtons = document.querySelectorAll('.submit-btn');
-                    allButtons.forEach(btn => {
-                        btn.disabled = false;
-                        btn.style.pointerEvents = 'auto';
+                checkOverflow() {
+                    const container = document.getElementById('scrollContainer');
+                    if (container) {
+                        this.hasOverflow = container.scrollWidth > container.clientWidth + 10;
+                    }
+                },
+
+                scrollGrid(direction) {
+                    const container = document.getElementById('scrollContainer');
+                    const root = getComputedStyle(document.documentElement);
+                    const cardWidth = parseInt(root.getPropertyValue('--card-width')) || 300;
+                    const cardGap = parseInt(root.getPropertyValue('--card-gap')) || 20;
+                    const scrollAmount = cardWidth + cardGap;
+
+                    container.scrollBy({
+                        left: direction === 'left' ? -scrollAmount : scrollAmount,
+                        behavior: 'smooth'
                     });
                 }
-            });
-        });
+            }
+        }
     </script>
 @endsection

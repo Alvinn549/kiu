@@ -14,6 +14,13 @@ use Illuminate\Support\Facades\DB;
 
 class AjaxController extends Controller
 {
+    public function touch()
+    {
+        $services = Service::active()->latest()->get();
+
+        return response()->json($services, 200);
+    }
+
     public function getCurrentQueue()
     {
         $user = Auth::user();

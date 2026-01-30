@@ -45,6 +45,12 @@ Route::group(['prefix' => 'dashboard', 'middleware' => 'auth'], function () {
 
 Route::group(['prefix' => 'ajax'], function () {
 
+    Route::get('/touch', [AjaxController::class, 'touch'])
+        ->name('ajax.touch');
+
+    Route::post('/touch/{service}/get-queue-number', [TouchController::class, 'getQueueNumber'])
+        ->name('ajax.touch.get-queue-number');
+
     Route::get('/dashboard/staff/current-queue', [AjaxController::class, 'getCurrentQueue'])
         ->name('ajax.dashboard.staff.current-queue');
 
@@ -71,8 +77,5 @@ Route::group(['prefix' => 'ajax'], function () {
 });
 
 Route::get('/touch', [TouchController::class, 'index'])->name('touch.index');
-
-Route::post('/touch/{service}/get-queue-number', [TouchController::class, 'getQueueNumber'])
-    ->name('touch.get-queue-number');
 
 Route::get('/display', [DisplayController::class, 'index'])->name('display.index');

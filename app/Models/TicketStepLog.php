@@ -24,4 +24,9 @@ class TicketStepLog extends Model
         'ticket_step_id',
         'event',
     ];
+
+    public function ticketStep()
+    {
+        return $this->belongsTo(TicketStep::class);
+    }
 }

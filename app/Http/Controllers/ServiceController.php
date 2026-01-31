@@ -36,8 +36,8 @@ class ServiceController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:50', 'unique:services,code'],
-            'opening_time' => ['required', 'date_format:H:i'],
-            'closing_time' => ['required', 'date_format:H:i', 'after:opening_time'],
+            'opening_time' => ['required', 'regex:/^\d{2}:\d{2}(:\d{2})?$/'],
+            'closing_time' => ['required', 'regex:/^\d{2}:\d{2}(:\d{2})?$/', 'after:opening_time'],
             'max_queue_per_day' => ['required', 'integer', 'min:1'],
             'icon' => ['nullable', 'image', 'max:2048'],
             'username' => ['required', 'string', 'max:255', 'unique:users,username'],
@@ -97,8 +97,8 @@ class ServiceController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:50', 'unique:services,code,' . $service->id],
-            'opening_time' => ['required', 'date_format:H:i'],
-            'closing_time' => ['required', 'date_format:H:i', 'after:opening_time'],
+            'opening_time' => ['required', 'regex:/^\d{2}:\d{2}(:\d{2})?$/'],
+            'closing_time' => ['required', 'regex:/^\d{2}:\d{2}(:\d{2})?$/', 'after:opening_time'],
             'max_queue_per_day' => ['required', 'integer', 'min:1'],
             'icon' => ['nullable', 'image', 'max:2048'],
             'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $service->operator->id],

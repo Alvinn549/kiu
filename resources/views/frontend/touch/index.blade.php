@@ -423,7 +423,17 @@
 
                 initApp() {
                     this.updateTime();
+
                     setInterval(() => this.updateTime(), 1000);
+
+                    setInterval(() => {
+                        fetch("{{ route('csrf.refresh') }}")
+                            .then(r => r.json())
+                            .then(d => {
+                                document.querySelector('meta[name="csrf-token"]')
+                                    .setAttribute('content', d.token);
+                            });
+                    }, 300000); // Refresh CSRF token every 5 minutes
 
                     this.fetchServices();
 

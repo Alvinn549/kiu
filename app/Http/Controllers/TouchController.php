@@ -2,14 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\GotQueue;
-use App\Models\Queue;
-use App\Models\QueueLog;
 use App\Models\Service;
-use Illuminate\Http\Request;
+use App\Models\Ticket;
+use App\Models\TicketStep;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use RealRashid\SweetAlert\Facades\Alert;
 
 class TouchController extends Controller
 {
@@ -18,79 +15,98 @@ class TouchController extends Controller
         return view('frontend.touch.index');
     }
 
-    public function getQueueNumber(Service $service, Request $request)
+    public function getQueueNumber(Service $service)
     {
         try {
-            $now = now();
-
             if (! $service->is_active) {
-                Alert::error('Layanan Tidak Aktif', 'Layanan ' . $service->name . ' sedang tidak aktif.');
-
-                return to_route('touch.index')
-                    ->with('error', 'Layanan ' . $service->name . ' sedang tidak aktif.');
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "Layanan {$service->name} sedang tidak aktif.",
+                ], 400);
             }
 
-            if ($now->format('H:i:s') < $service->opening_time || $now->format('H:i:s') > $service->closing_time) {
-                Alert::error('Layanan Tutup', 'Layanan ' . $service->name . ' sedang tutup.');
+            if ($service->opening_time && $service->closing_time) {
+                if (
+                    now()->format('H:i:s') < $service->opening_time ||
+                    now()->format('H:i:s') > $service->closing_time
+                ) {
 
-                return to_route('touch.index')
-                    ->with('error', 'Layanan ' . $service->name . ' sedang tutup.');
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => "Layanan {$service->name} sedang tutup.",
+                    ], 400);
+                }
             }
 
-            $todayQueueCount = Queue::where('service_id', $service->id)
-                ->whereDate('created_at', $now->toDateString())
-                ->count();
+            if ($service->max_queue_per_day > 0) {
+                $todayCount = TicketStep::where('service_id', $service->id)
+                    ->whereDate('created_at', today())
+                    ->count();
 
-            if ($todayQueueCount >= $service->max_queue_per_day) {
-                Alert::error(
-                    'Kuota Penuh',
-                    'Kuota antrian untuk layanan ' . $service->name . ' hari ini sudah penuh.'
-                );
-
-                return to_route('touch.index')
-                    ->with('error', 'Kuota antrian untuk layanan ' . $service->name . ' hari ini sudah penuh.');
+                if ($todayCount >= $service->max_queue_per_day) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Kuota hari ini penuh.',
+                    ], 400);
+                }
             }
 
-            DB::transaction(function () use ($service, $now, &$ticketNumber) {
+            $ticket = DB::transaction(function () use ($service) {
 
-                $lastSequence = Queue::where('service_id', $service->id)
-                    ->whereDate('created_at', $now->toDateString())
-                    ->max('sequence');
+                $lastNumber = Ticket::where('ticket_number', 'like', $service->code . '-%')
+                    ->whereDate('created_at', today())
+                    ->lockForUpdate()
+                    ->latest()
+                    ->value('ticket_number');
 
-                $nextSequence = ($lastSequence ?? 0) + 1;
+                $next = $lastNumber
+                    ? ((int) explode('-', $lastNumber)[1]) + 1
+                    : 1;
 
-                $ticketNumber = strtoupper($service->code) . '-' . str_pad($nextSequence, 3, '0', STR_PAD_LEFT);
+                $ticketNumber = $service->code . '-' . str_pad($next, 3, '0', STR_PAD_LEFT);
 
-                $queue = Queue::create([
-                    'service_id' => $service->id,
-                    'counter_id' => null,
+                $ticket = Ticket::create([
                     'ticket_number' => $ticketNumber,
-                    'sequence' => $nextSequence,
-                    'status' => Queue::STATUS_WAITING,
                 ]);
 
-                QueueLog::create([
-                    'queue_id' => $queue->id,
-                    'event' => QueueLog::EVENT_CREATED,
-                ]);
+                $routes = $service->routesFrom()->orderBy('step_order')->get();
 
-                broadcast(new GotQueue($service));
+                if ($routes->isEmpty()) {
+
+                    TicketStep::create([
+                        'ticket_id' => $ticket->id,
+                        'service_id' => $service->id,
+                        'step_order' => 1,
+                    ]);
+                } else {
+
+                    foreach ($routes as $route) {
+                        TicketStep::create([
+                            'ticket_id' => $ticket->id,
+                            'service_id' => $route->to_service_id,
+                            'step_order' => $route->step_order,
+                        ]);
+                    }
+                }
+
+                return $ticket;
             });
 
-            Alert::success('Berhasil', 'Nomor antrian Anda: ' . $ticketNumber);
-
-            return to_route('touch.index')
-                ->with('success', 'Nomor antrian berhasil diambil: ' . $ticketNumber);
+            return response()->json([
+                'status' => 'success',
+                'ticket' => $ticket->load('steps.service'),
+            ]);
         } catch (\Throwable $e) {
-            Log::error('Error getting queue number', [
+
+            Log::error('Queue Error', [
                 'service_id' => $service->id,
-                'message' => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
-            Alert::error('Gagal', 'Gagal mengambil nomor antrian. Silakan coba lagi.');
-
-            return to_route('touch.index')
-                ->with('error', 'Gagal mengambil nomor antrian. Silakan coba lagi.');
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal mengambil nomor.',
+            ], 500);
         }
     }
 }

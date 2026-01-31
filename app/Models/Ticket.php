@@ -17,4 +17,9 @@ class Ticket extends Model
         'status',
         'completed_at',
     ];
+
+    public function steps()
+    {
+        return $this->hasMany(TicketStep::class);
+    }
 }

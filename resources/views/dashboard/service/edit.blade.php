@@ -42,6 +42,54 @@
                                 @enderror
                             </div>
                         </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label for="opening_time" class="form-label">Jam Buka</label>
+                                <input type="time" class="form-control @error('opening_time') is-invalid @enderror"
+                                    id="opening_time" name="opening_time"
+                                    value="{{ old('opening_time', $service->opening_time) }}">
+                                @error('opening_time')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label for="closing_time" class="form-label">Jam Tutup</label>
+                                <input type="time" class="form-control @error('closing_time') is-invalid @enderror"
+                                    id="closing_time" name="closing_time"
+                                    value="{{ old('closing_time', $service->closing_time) }}">
+                                @error('closing_time')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label for="max_queue_per_day" class="form-label">Maks. Antrean / Hari</label>
+                                <input type="number" class="form-control @error('max_queue_per_day') is-invalid @enderror"
+                                    id="max_queue_per_day" name="max_queue_per_day"
+                                    value="{{ old('max_queue_per_day', $service->max_queue_per_day) }}"
+                                    placeholder="Contoh: 100">
+                                @error('max_queue_per_day')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="form-group mb-3">
+                                <label for="icon" class="form-label">Ikon Layanan (Gambar)</label>
+                                <input type="file" class="form-control @error('icon') is-invalid @enderror"
+                                    id="icon" name="icon" accept="image/*">
+                                <small class="text-muted">Format: JPG, PNG, WEBP. Maks: 2MB</small>
+                                @error('icon')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

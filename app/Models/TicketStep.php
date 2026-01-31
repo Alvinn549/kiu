@@ -32,4 +32,24 @@ class TicketStep extends Model
         'is_manual',
         'note',
     ];
+
+    public function ticket()
+    {
+        return $this->belongsTo(Ticket::class);
+    }
+
+    public function service()
+    {
+        return $this->belongsTo(Service::class);
+    }
+
+    public function counter()
+    {
+        return $this->belongsTo(Counter::class);
+    }
+
+    public function logs()
+    {
+        return $this->hasMany(TicketStepLog::class);
+    }
 }

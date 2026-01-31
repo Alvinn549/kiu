@@ -95,7 +95,7 @@
 @endsection
 
 @section('content')
-    <section x-data="counterDashboard()" class="position-relative min-vh-100">
+    <section x-data="counterDashboard()" x-init="init()" class="position-relative min-vh-100">
 
         <div x-show="isLoading" x-transition.opacity>
             <div class="d-flex flex-column align-items-center justify-content-center" style="height: 80vh;">
@@ -442,8 +442,8 @@
     <script src="{{ asset('theme/dashboard/assets/extensions/sweetalert2/sweetalert2.min.js') }}"></script>
 
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('counterDashboard', () => ({
+        function counterDashboard() {
+            return {
                 isLoading: true,
                 errorMessage: '',
                 user: null,
@@ -669,7 +669,7 @@
                         month: 'short'
                     });
                 }
-            }))
-        })
+            }
+        }
     </script>
 @endsection

@@ -64,11 +64,10 @@ Route::group(['prefix' => 'fetch'], function () {
     Route::get('/display-data', [MainDisplayController::class, 'getDisplayData'])
         ->name('fetch.display.data');
 
-    // OLD ROUTES FOR DASHBOARD
-
-    Route::get('/dashboard/staff/current-queue', [FetchController::class, 'getCurrentQueue'])
-        ->name('fetch.dashboard.staff.current-queue');
-
+        Route::get('/counter-dashboard', [FetchController::class, 'counterDashboard'])
+        ->name('fetch.counter-dashboard');
+        
+        // OLD ROUTES FOR DASHBOARD
     Route::put('/counters/{counter}/set-status', [FetchController::class, 'setStatusCounter'])
         ->name('fetch.set-status-counter');
 

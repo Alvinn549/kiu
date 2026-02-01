@@ -4,6 +4,8 @@
 
 @section('css')
     <link href="{{ asset('theme/dashboard/assets/extensions/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('theme/dashboard/assets/extensions/@fortawesome/fontawesome-free/css/all.min.css') }}"
+        rel="stylesheet">
 
     <style>
         .fw-black {
@@ -91,346 +93,418 @@
         .pulse-secondary {
             --pulse-color: 108, 117, 125;
         }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .stat-pill {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-pill:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .dropdown-toggle[aria-expanded="true"] .chevron-rotate {
+            transform: rotate(180deg);
+        }
+
+        .chevron-rotate {
+            transition: transform 0.3s ease;
+        }
     </style>
 @endsection
 
 @section('content')
     <section x-data="counterDashboard()" x-init="init()" class="position-relative min-vh-100">
 
-        <div x-show="isLoading" x-transition.opacity>
-            <div class="d-flex flex-column align-items-center justify-content-center" style="height: 80vh;">
-                <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <div class="mt-3">
-                    <span class="text-muted fw-medium">Memuat data...</span>
-                </div>
-            </div>
+        <div class="loading-overlay" :class="{ 'active': isLoading || isProcessing }">
+            <div class="spinner mb-4"></div>
+            <h2 class="text-white fw-bold">Memproses...</h2>
         </div>
 
-        <div x-show="!isLoading" x-transition.opacity style="display: none;">
+        <div class="row">
+            <div class="col-12">
+                <div class="card command-card border-0 rounded-4 shadow-sm">
+                    <div class="card-body p-0">
 
-            <div class="row">
-                <div class="col-12">
-                    <div class="card bg-white-subtle border-0 shadow-sm rounded-4">
-                        <div class="card-body p-4">
+                        <div class="p-4">
                             <div class="row g-4 align-items-center">
-
-                                <div class="col-12 col-md-4 position-relative">
-                                    <div class="d-flex flex-column pe-md-3">
-                                        <div class="d-flex align-items-center mb-2">
-                                            <span
-                                                class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-2 d-flex align-items-center gap-2">
-                                                <i class="bi bi-shop-window"></i>
-                                                <span class="fw-bold" x-text="counter?.name || 'No Counter'"></span>
-                                            </span>
-                                        </div>
-                                        <h4 class="fw-bold mb-0 text-truncate" :title="user?.name" x-text="user?.name">
-                                        </h4>
-                                        <small class="text-secondary fw-medium text-truncate"
-                                            x-text="'@' + (user?.username || '')"></small>
-                                    </div>
-
-                                    <div class="d-none d-md-block position-absolute end-0 top-50 translate-middle-y bg-light-subtle"
-                                        style="width: 1px; height: 70%;"></div>
-                                </div>
-
-                                <div class="col-12 col-md-3 position-relative">
-                                    <div class="px-md-2">
-                                        <label class="text-uppercase text-muted fw-bold d-block mb-1"
-                                            style="font-size: 0.65rem; letter-spacing: 1px;">Layanan Aktif</label>
-                                        <h5 class="fw-black mb-0 text-truncate" :title="service?.name || 'Unavailable'"
-                                            x-text="service?.name || 'Unavailable'"></h5>
-
-                                        <div class="d-flex align-items-center gap-2 mt-1">
-                                            <span
-                                                class="badge bg-light text-secondary border border-light-subtle rounded-pill fw-normal px-2"
-                                                style="font-size: 0.75rem;">
-                                                <i class="bi bi-clock me-1"></i>
+                                <div class="col-12 col-lg-4">
+                                    <div class="ps-2 h-100">
+                                        <div
+                                            class="bg-light bg-opacity-50 rounded-4 p-3 d-flex flex-column justify-content-center h-100 border border-white">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fas fa-desktop text-primary small"></i>
+                                                    <span class="fw-bold text-primary small text-uppercase tracking-wider"
+                                                        x-text="counter?.name"></span>
+                                                </div>
                                                 <span
-                                                    x-text="service ? (service.opening_time.substr(0,5) + ' - ' + service.closing_time.substr(0,5)) : '--:--'"></span>
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div class="d-none d-md-block position-absolute end-0 top-50 translate-middle-y bg-light-subtle"
-                                        style="width: 1px; height: 70%;"></div>
-                                </div>
-
-                                <div class="col-12 col-md-2">
-                                    <div class="text-start text-md-center px-md-1">
-                                        <h2 class="fw-black font-monospace mb-0 lh-1" x-text="clockTime">--:--</h2>
-                                        <small class="text-secondary fw-medium d-block text-truncate"
-                                            x-text="clockDate">...</small>
-                                    </div>
-                                </div>
-
-                                <div class="col-12 col-md-3">
-                                    <div class="dropdown w-100 ps-md-2">
-                                        <button
-                                            class="btn w-100 border border-light-subtle shadow-sm rounded-pill px-3 py-2 d-flex align-items-center justify-content-between gap-3 btn-hover-scale bg-white-subtle"
-                                            type="button" data-bs-toggle="dropdown">
-
-                                            <div class="d-flex align-items-center gap-2 overflow-hidden">
-                                                <span
-                                                    class="d-flex align-items-center justify-content-center bg-opacity-10 rounded-circle flex-shrink-0"
-                                                    :class="`bg-${statusColor}`" style="width: 28px; height: 28px;">
-                                                    <span class="rounded-circle status-dot-pulse"
-                                                        :class="[`bg-${statusColor}`, `pulse-${statusColor}`]"
-                                                        style="width: 10px; height: 10px; box-shadow: 0 0 0 2px rgba(255,255,255,0.8);"></span>
+                                                    class="badge rounded-pill bg-success-subtle text-success border border-success-subtle"
+                                                    style="font-size: 0.6rem;">
+                                                    <i class="fas fa-circle fa-xs me-1"></i> LIVE
                                                 </span>
-                                                <span class="fw-bold small text-truncate" x-text="statusLabel"></span>
                                             </div>
-                                            <i class="bi bi-chevron-down text-muted ms-1 flex-shrink-0"
-                                                style="font-size: 0.7rem;"></i>
-                                        </button>
 
+                                            <div class="mt-1">
+                                                <h4 class="fw-black mb-0 text-dark text-truncate" x-text="user?.name"></h4>
+                                                <div class="text-muted small">
+                                                    <i class="fas fa-at text-xs me-1"></i><span
+                                                        x-text="user?.username"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 col-lg-4 text-center">
+                                    <div
+                                        class="d-inline-flex flex-column align-items-center px-4 py-2 rounded-4 bg-white-subtle shadow-sm border border-light">
+                                        <h2 class="fw-black font-monospace mb-0 text-dark tracking-tight"
+                                            style="font-size: 2.5rem;" x-text="clockTime"></h2>
+                                        <div class="d-flex align-items-center gap-2 text-muted mt-1">
+                                            <i class="far fa-calendar-alt small"></i>
+                                            <span class="fw-bold small text-uppercase tracking-wide"
+                                                x-text="clockDate"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 col-lg-4">
+                                    <div class="dropdown">
+                                        <label class="small fw-bold text-muted text-uppercase mb-2 d-block ms-2"
+                                            style="font-size: 0.65rem;">
+                                            <i class="fas fa-sliders-h me-1"></i> Kontrol Loket
+                                        </label>
+                                        <button
+                                            class="btn btn-white w-100 border shadow-sm rounded-4 px-4 py-3 d-flex align-items-center justify-content-between bg-white-subtle"
+                                            type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="position-relative">
+                                                    <div class="status-dot-pulse rounded-circle"
+                                                        :class="`bg-${statusColor} pulse-${statusColor}`"
+                                                        style="width: 12px; height: 12px;"></div>
+                                                </div>
+                                                <div class="text-start">
+                                                    <span class="d-block fw-black text-dark lh-1"
+                                                        x-text="statusLabel"></span>
+                                                    <small class="text-muted" style="font-size: 0.7rem;">Ganti Status
+                                                        Sekarang</small>
+                                                </div>
+                                            </div>
+                                            <i class="fas fa-chevron-down text-muted small chevron-rotate"></i>
+                                        </button>
                                         <ul
-                                            class="dropdown-menu dropdown-menu-end w-100 shadow-lg border-0 rounded-4 p-2 mt-2">
-                                            <li class="px-3 py-2 text-uppercase text-muted fw-bold"
-                                                style="font-size: 0.65rem;">
-                                                Ubah Status Loket
-                                            </li>
+                                            class="dropdown-menu dropdown-menu-end shadow-xl border-0 rounded-4 p-2 mt-2 w-100">
                                             <template x-for="(label, key) in statusMap" :key="key">
                                                 <li>
                                                     <button type="button" @click="updateStatus(key)"
-                                                        class="dropdown-item rounded-3 py-2 d-flex align-items-center justify-content-between"
-                                                        :class="counter?.status === key ? 'active fw-bold' : ''">
-                                                        <span x-text="label"></span>
-                                                        <template x-if="counter?.status === key">
-                                                            <i class="bi bi-check-lg text-white mb-2"></i>
-                                                        </template>
+                                                        class="dropdown-item rounded-3 py-2 px-3 d-flex align-items-center justify-content-between"
+                                                        :class="counter?.status === key ? 'bg-primary text-white fw-bold' : ''">
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <i class="fas fa-circle fa-xs"
+                                                                :class="counter?.status === key ? 'text-white' : 'text-' + (
+                                                                    key === 'active' ? 'success' : 'danger')"></i>
+                                                            <span x-text="label"></span>
+                                                        </div>
+                                                        <i x-show="counter?.status === key" class="fas fa-check-circle"></i>
                                                     </button>
                                                 </li>
                                             </template>
                                         </ul>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
+
+                        <div class="bg-primary-subtle border-top p-3 px-4 rounded-bottom-4">
+                            <div class="row g-3">
+                                <div class="col-6 col-lg-3">
+                                    <div class="stat-pill d-flex align-items-center gap-3 p-3 rounded-4 shadow-sm bg-white">
+                                        <div class="p-2 rounded-3 bg-primary-subtle text-primary text-center"
+                                            style="width: 40px;">
+                                            <i class="fas fa-clock"></i>
+                                        </div>
+                                        <div class="lh-sm">
+                                            <p class="text-muted fw-bold text-uppercase mb-0"
+                                                style="font-size: 0.55rem; letter-spacing: 0.5px;">Menunggu</p>
+                                            <h4 class="fw-black mb-0 text-dark" x-text="waiting_count"></h4>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-6 col-lg-3">
+                                    <div class="stat-pill d-flex align-items-center gap-3 p-3 rounded-4 shadow-sm bg-white">
+                                        <div class="p-2 rounded-3 bg-success-subtle text-success text-center"
+                                            style="width: 40px;">
+                                            <i class="fas fa-check-double"></i>
+                                        </div>
+                                        <div class="lh-sm">
+                                            <p class="text-muted fw-bold text-uppercase mb-0"
+                                                style="font-size: 0.55rem; letter-spacing: 0.5px;">Selesai</p>
+                                            <h4 class="fw-black mb-0 text-dark" x-text="completed_count"></h4>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-6 col-lg-3">
+                                    <div class="stat-pill d-flex align-items-center gap-3 p-3 rounded-4 shadow-sm bg-white">
+                                        <div class="p-2 rounded-3 bg-warning-subtle text-warning text-center"
+                                            style="width: 40px;">
+                                            <i class="fas fa-user-slash"></i>
+                                        </div>
+                                        <div class="lh-sm">
+                                            <p class="text-muted fw-bold text-uppercase mb-0"
+                                                style="font-size: 0.55rem; letter-spacing: 0.5px;">Dilewati</p>
+                                            <h4 class="fw-black mb-0 text-dark" x-text="skipped_count"></h4>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-6 col-lg-3">
+                                    <div
+                                        class="stat-pill d-flex align-items-center gap-3 p-3 rounded-4 shadow-sm bg-white">
+                                        <div class="p-2 rounded-3 bg-info-subtle text-info text-center"
+                                            style="width: 40px;">
+                                            <i class="fas fa-hourglass-half"></i>
+                                        </div>
+                                        <div class="lh-sm">
+                                            <p class="text-muted fw-bold text-uppercase mb-0"
+                                                style="font-size: 0.55rem; letter-spacing: 0.5px;">Rata-rata</p>
+                                            <h4 class="fw-black mb-0 text-dark" x-text="avg_service_time"></h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="row">
-                <template x-for="item in statusCards">
-                    <div class="col-6 col-md-3">
-                        <div class="card rounded-4 border-0 p-3 text-center btn-hover-scale">
+        <div class="row">
+            <div class="col-lg-8">
 
-                            <div class="fs-4 mb-1" :class="item.color">
-                                <i :class="`bi ${item.icon}`"></i>
+                <template x-if="!currentTicket">
+                    <div class="card rounded-4 border-0 shadow-sm text-center py-5 d-flex flex-column justify-content-center"
+                        style="min-height: 550px;">
+                        <div class="mb-4 position-relative">
+                            <i class="bi bi-megaphone-fill text-primary" style="font-size: 3rem;"></i>
+                            <template x-if="nextTicket">
+                                <span
+                                    class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-danger border border-white">New!</span>
+                            </template>
+                        </div>
+
+                        <h3 class="fw-bold mb-2">Loket Tersedia</h3>
+
+                        <template x-if="nextTicket">
+                            <div>
+                                <p class="text-muted mb-4">
+                                    Antrian berikutnya <span class="fw-bold badge bg-light text-dark border"
+                                        x-text="nextTicket.ticket?.ticket_number"></span>
+                                    <br>
+                                    <small x-text="nextTicket.service?.name"></small>
+                                </p>
+                                <div class="d-flex justify-content-center">
+                                    <button type="button" @click="callQueue(nextTicket.id)"
+                                        class="btn btn-primary btn-lg rounded-pill px-5 py-3 shadow-lg btn-pulse-primary fw-bold">
+                                        <i class="bi bi-broadcast me-2"></i> Panggil Sekarang
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template x-if="!nextTicket">
+                            <div>
+                                <p class="text-muted mb-4 px-5">Belum ada antrian baru.</p>
+                                <div>
+                                    <button type="button" @click="fetchData(true)"
+                                        class="btn btn-outline-secondary rounded-pill px-4 py-2">
+                                        <i class="bi bi-arrow-clockwise me-2"></i> Refresh Data
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <template x-if="currentTicket">
+                    <div class="card rounded-4 shadow-sm border-0" style="min-height: 550px;">
+
+                        <div
+                            class="card-header border-0 bg-transparent pt-4 px-4 d-flex justify-content-between align-items-center">
+                            <span
+                                class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3 py-2 d-flex align-items-center gap-2">
+                                <span class="spinner-grow spinner-grow-sm" role="status"></span>
+                                <span class="fw-bold">Sedang Melayani</span>
+                            </span>
+                            <span
+                                class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 d-flex align-items-center gap-2">
+                                <i class="bi bi-stopwatch"></i>
+                                <span class="fw-bold font-monospace" x-text="timerDisplay">00:00:00</span>
+                            </span>
+                        </div>
+
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <div class="mb-2">
+                                <p class="text-uppercase text-muted fw-bold text-spacing-wide mb-1 small">Nomor Antrian
+                                </p>
+                                <h1 class="mb-0 display-1 fw-black text-primary"
+                                    x-text="currentTicket.ticket?.ticket_number">--</h1>
+                                <span class="badge bg-light text-secondary mt-2 border"
+                                    x-text="currentTicket.service?.name"></span>
                             </div>
 
-                            <h4 class="fw-black mb-1" x-text="item.val || 0"></h4>
+                            <div class="row g-3 px-md-5 mb-5 mt-4">
+                                <div class="col-6">
+                                    <button type="button" @click="callQueue(currentTicket.id)"
+                                        class="btn btn-white text-warning border border-warning w-100 py-3 rounded-4 btn-hover-scale shadow-sm">
+                                        <i class="bi bi-arrow-counterclockwise fs-4 me-2"></i>
+                                        <span class="fw-bold fs-5">Panggil Ulang</span>
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button type="button" @click="completeQueue(currentTicket.id)"
+                                        class="btn btn-success w-100 py-3 rounded-4 btn-hover-scale shadow-lg">
+                                        <i class="bi bi-check-lg fs-4 me-2"></i>
+                                        <span class="fw-bold fs-5">Selesaikan</span>
+                                    </button>
+                                </div>
+                            </div>
 
-                            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;"
-                                x-text="item.label">
-                            </small>
+                            <div class="d-flex justify-content-center gap-3">
+                                <button type="button" @click="skipQueue(currentTicket.id)"
+                                    class="btn btn-link text-danger text-decoration-none">
+                                    <i class="bi bi-slash-circle me-1"></i> Lewati (Skip)
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </template>
             </div>
 
-            <div class="row">
-                <div class="col-lg-8">
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 rounded-4" x-data="{ tab: 'waiting' }"
+                    style="min-height: 550px; max-height: 550px;">
 
-                    <template x-if="!currentQueue">
-                        <div class="card rounded-4 border-0 shadow-sm text-center py-5 d-flex flex-column justify-content-center"
-                            style="min-height: 550px;">
+                    <div class="card-header bg-transparent border-0 p-3">
+                        <ul class="nav nav-pills nav-fill bg-light-subtle p-1 rounded-pill">
+                            <li class="nav-item">
+                                <button class="nav-link rounded-pill fw-bold small py-2"
+                                    :class="tab === 'waiting' ? 'active shadow-sm' : ''" @click="tab='waiting'">
+                                    Menunggu (<span x-text="waitingTicket.length"></span>)
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link rounded-pill fw-bold small py-2"
+                                    :class="tab === 'history' ? 'active shadow-sm' : ''" @click="tab='history'">
+                                    Riwayat
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
 
-                            <div class="mb-4 position-relative">
-                                <i class="bi bi-megaphone-fill text-primary" style="font-size: 3rem;"></i>
-                                <template x-if="nextQueue">
-                                    <span
-                                        class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-danger border border-white">
-                                        New!
-                                    </span>
+                    <div class="card-body p-0 custom-scroll" style="overflow-y: auto;">
+
+                        <div x-show="tab === 'waiting'">
+                            <div class="list-group list-group-flush px-2 pb-2">
+                                <template x-for="(q, index) in waitingTicket" :key="q.id">
+                                    <div
+                                        class="list-group-item border-0 rounded-3 mb-1 p-3 d-flex justify-content-between align-items-center bg-transparent hover-bg-light">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-white-subtle shadow-sm rounded-circle d-flex align-items-center justify-content-center me-3 text-primary fw-bold border"
+                                                style="width: 42px; height: 42px;" x-text="index + 1"></div>
+                                            <div>
+                                                <h6 class="mb-0 fw-black" x-text="q.ticket?.ticket_number"></h6>
+                                                <small class="text-muted" x-text="q.service?.name"></small>
+                                            </div>
+                                        </div>
+                                        <button type="button" @click="directCallQueue(q.id)"
+                                            class="btn btn-light btn-sm rounded-circle shadow-sm text-primary"
+                                            title="Panggil Langsung">
+                                            <i class="bi bi-play-fill"></i>
+                                        </button>
+                                    </div>
+                                </template>
+                                <template x-if="waitingTicket.length === 0">
+                                    <div class="text-center">
+                                        <div class="mt-5 opacity-50">
+                                            <i class="bi bi-inbox fs-1 me-2"></i>
+                                        </div>
+                                        <div class="opacity-50">
+                                            <small>Tidak ada antrian menunggu</small>
+                                        </div>
+                                    </div>
                                 </template>
                             </div>
-
-                            <h3 class="fw-bold mb-2">Loket Tersedia</h3>
-
-                            <template x-if="nextQueue">
-                                <div>
-                                    <p class="text-muted mb-4">Antrian berikutnya <span class="fw-bold"
-                                            x-text="nextQueue.ticket_number"></span> siap dipanggil.</p>
-                                    <div class="d-flex justify-content-center">
-                                        <button type="button" @click="callQueue(nextQueue.id)"
-                                            class="btn btn-primary btn-lg rounded-pill px-5 py-3 shadow-lg btn-pulse-primary fw-bold">
-                                            <i class="bi bi-broadcast me-2"></i> Panggil Sekarang
-                                        </button>
-                                    </div>
-                                </div>
-                            </template>
-
-                            <template x-if="!nextQueue">
-                                <div>
-                                    <p class="text-muted mb-4 px-5">Belum ada antrian baru. Silahkan istirahat sejenak atau
-                                        menunggu pengunjung.</p>
-                                    <div>
-                                        <button type="button" class="btn text-muted border rounded-pill px-4 py-2"
-                                            disabled>
-                                            <span class="spinner-border spinner-border-sm me-2"></span> Menunggu Data...
-                                        </button>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-                    </template>
-
-                    <template x-if="currentQueue">
-                        <div class="card rounded-4 shadow-sm border-0" style="min-height: 550px;">
-
-                            <div
-                                class="card-header border-0 bg-transparent pt-4 px-4 d-flex justify-content-between align-items-center">
-                                <span
-                                    class="badge rounded-pill bg-white-subtle text-success shadow-sm px-3 py-2 border border-success-subtle d-flex align-items-center gap-2">
-                                    <span class="spinner-grow spinner-grow-sm text-success" role="status"></span>
-                                    <span class="fw-bold">Sedang Melayani</span>
-                                </span>
-
-                                <span
-                                    class="badge rounded-pill bg-white-subtle text-primary shadow-sm px-3 py-2 border border-primary-subtle d-flex align-items-center gap-2">
-                                    <span class="bi bi-stopwatch text-primary" role="status"></span>
-                                    <span class="fw-bold" x-text="timerDisplay">00:00:00</span>
-                                </span>
-                            </div>
-
-                            <div class="card-body text-center d-flex flex-column justify-content-center">
-                                <div class="mb-5 position-relative">
-                                    <p class="text-uppercase text-muted fw-bold text-spacing-wide mb-0 small">Nomor Antrian
-                                    </p>
-                                    <h1 class="mb-0"
-                                        style="font-size: 7rem; line-height: 1; text-shadow: 0 4px 10px rgba(0,0,0,0.05);"
-                                        x-text="currentQueue.ticket_number">--</h1>
-                                </div>
-
-                                <div class="row g-3 px-md-5 mb-5">
-                                    <div class="col-6">
-                                        <button type="button" @click="callQueue(currentQueue.id)"
-                                            class="btn btn-white text-warning border border-warning w-100 py-3 rounded-4 btn-hover-scale">
-                                            <i class="bi bi-arrow-counterclockwise fs-4 me-2"></i>
-                                            <span class="fw-bold fs-5">Panggil Ulang</span>
-                                        </button>
-                                    </div>
-                                    <div class="col-6">
-                                        <button type="button" @click="completeQueue(currentQueue.id)"
-                                            class="btn btn-success w-100 py-3 rounded-4 btn-hover-scale">
-                                            <i class="bi bi-check-lg fs-4 me-2"></i>
-                                            <span class="fw-bold fs-5">Selesaikan</span>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class="position-relative text-center w-100 mb-4">
-                                    <hr class="text-muted opacity-25">
-                                    <span
-                                        class="position-absolute top-50 start-50 translate-middle px-2 bg-body text-muted small text-uppercase"
-                                        style="font-size: 0.65rem;">Opsi Lainnya
-                                    </span>
-                                </div>
-
-                                <div class="d-flex justify-content-center gap-3">
-                                    <button type="button" @click="skipQueue(currentQueue.id)"
-                                        class="btn btn-outline-danger btn-sm rounded-pill px-4 hover-lift">
-                                        <i class="bi bi-slash-circle me-1"></i> Lewati (Skip)
-                                    </button>
-                                    <button type="button"
-                                        class="btn btn-outline-secondary btn-sm rounded-pill px-4 hover-lift">
-                                        <i class="bi bi-arrow-left-right me-1"></i> Transfer
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-
-                <div class="col-lg-4">
-                    <div class="card shadow-sm border-0 rounded-4" x-data="{ tab: 'waiting' }"
-                        style="min-height: 550px; max-height: 550px;">
-
-                        <div class="card-header bg-transparent border-0 p-2">
-                            <ul class="nav nav-pills nav-fill bg-light-subtle p-1 rounded-pill">
-                                <li class="nav-item">
-                                    <button type="button" class="nav-link rounded-pill fw-bold small py-2"
-                                        :class="tab === 'waiting' ? 'active' : ''" @click="tab='waiting'">
-                                        Menunggu (<span x-text="waitingList.length"></span>)
-                                    </button>
-                                </li>
-                                <li class="nav-item">
-                                    <button type="button" class="nav-link rounded-pill fw-bold small py-2"
-                                        :class="tab === 'history' ? 'active' : ''" @click="tab='history'">
-                                        Riwayat
-                                    </button>
-                                </li>
-                            </ul>
                         </div>
 
-                        <div class="card-body p-0 custom-scroll" style="overflow-y: auto;">
-
-                            <div x-show="tab === 'waiting'">
-                                <div class="list-group list-group-flush px-2 pb-2">
-                                    <template x-for="(q, index) in waitingList" :key="q.id">
-                                        <div
-                                            class="list-group-item border-0 rounded-3 mb-1 p-3 d-flex justify-content-between align-items-center bg-transparent hover-bg-light">
-                                            <div class="d-flex align-items-center">
-                                                <div class="bg-white-subtle shadow-sm rounded-circle d-flex align-items-center justify-content-center me-3 text-primary fw-bold border"
-                                                    style="width: 42px; height: 42px;" x-text="index + 1"></div>
-                                                <div>
-                                                    <h6 class="mb-0 fw-black" x-text="q.ticket_number"></h6>
-                                                    <small class="text-muted" style="font-size: 0.75rem;">Walk-in
-                                                        Customer</small>
-                                                </div>
-                                            </div>
-                                            <button type="button" @click="directCallQueue(q.id)"
-                                                class="btn btn-light btn-sm rounded-circle shadow-sm text-primary">
-                                                <i class="bi bi-play-fill" data-bs-toggle="tooltip"
-                                                    title="Panggil Langsung"></i>
-                                            </button>
-                                        </div>
-                                    </template>
-
-                                    <template x-if="waitingList.length === 0">
+                        <div x-show="tab === 'history'">
+                            <div class="list-group list-group-flush px-2 pb-2">
+                                <template x-for="h in historyTicket" :key="h.id">
+                                    <div
+                                        class="list-group-item border-0 rounded-3 mb-1 p-3 d-flex justify-content-between align-items-center bg-transparent">
                                         <div>
-                                            <div class="text-center mt-5 opacity-50">
-                                                <i class="bi bi-inbox fs-1 me-2"></i>
-                                            </div>
-                                            <div class="text-center opacity-50">
-                                                <small>Tidak ada antrian menunggu</small>
-                                            </div>
+                                            <span class="fw-bold d-block" x-text="h.ticket?.ticket_number"></span>
+                                            <small class="text-muted" x-text="h.service?.name"></small>
                                         </div>
-                                    </template>
-                                </div>
+                                        <span class="badge rounded-pill px-3"
+                                            :class="h.status === 'completed' ? 'bg-success-subtle text-success' :
+                                                'bg-danger-subtle text-danger'"
+                                            x-text="h.status"></span>
+                                    </div>
+                                </template>
+                                <template x-if="historyTicket.length === 0">
+                                    <div class="text-center">
+                                        <div class="mt-5 opacity-50">
+                                            <i class="bi bi-inbox fs-1 me-2"></i>
+                                        </div>
+                                        <div class="opacity-50">
+                                            <small>Tidak ada riwayat antrian</small>
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
-
-                            <div x-show="tab === 'history'" style="display: none;">
-                                <div class="list-group list-group-flush px-2 pb-2">
-                                    <template x-for="h in historyList" :key="h.id">
-                                        <div
-                                            class="list-group-item border-0 rounded-3 mb-1 p-3 d-flex justify-content-between align-items-center bg-transparent">
-                                            <span class="fw-bold text-secondary" x-text="h.ticket_number"></span>
-                                            <span class="badge rounded-pill px-3"
-                                                :class="h.status === 'completed' ? 'bg-success-subtle text-success' :
-                                                    'bg-danger-subtle text-danger'"
-                                                x-text="h.status === 'completed' ? 'Selesai' : 'Skipped'"></span>
-                                        </div>
-                                    </template>
-
-                                    <template x-if="historyList.length === 0">
-                                        <div>
-                                            <div class="text-center mt-5 opacity-50">
-                                                <i class="bi bi-inbox fs-1 me-2"></i>
-                                            </div>
-                                            <div class="text-center opacity-50">
-                                                <small>Tidak ada riwayat antrian</small>
-                                            </div>
-                                        </div>
-                                    </template>
-                                </div>
-                            </div>
-
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -440,25 +514,22 @@
 
 @section('js')
     <script src="{{ asset('theme/dashboard/assets/extensions/sweetalert2/sweetalert2.min.js') }}"></script>
-
+    <script src="{{ asset('theme/dashboard/assets/extensions/@fortawesome/fontawesome-free/js/all.min.js') }}"></script>
     <script>
         function counterDashboard() {
             return {
                 isLoading: true,
-                errorMessage: '',
+                isProcessing: false,
                 user: null,
                 counter: null,
-                service: null,
-                stats: {
-                    waiting: 0,
-                    completed: 0,
-                    skipped: 0,
-                    avg_time: '0m'
-                },
-                currentQueue: null,
-                nextQueue: null,
-                waitingList: [],
-                historyList: [],
+                waiting_count: 0,
+                completed_count: 0,
+                skipped_count: 0,
+                avg_service_time: '0m',
+                currentTicket: null,
+                nextTicket: null,
+                waitingTicket: [],
+                historyTicket: [],
                 statusMap: {
                     'open': 'Buka',
                     'break': 'Istirahat',
@@ -468,157 +539,7 @@
                 clockDate: '...',
                 timerDisplay: '00:00:00',
                 timerInterval: null,
-                statusCards: [{
-                        val: this.stats?.waiting,
-                        icon: 'bi-hourglass-split',
-                        color: 'text-warning',
-                        label: 'Menunggu'
-                    },
-                    {
-                        val: this.stats?.completed,
-                        icon: 'bi-check-circle-fill',
-                        color: 'text-success',
-                        label: 'Selesai'
-                    },
-                    {
-                        val: this.stats?.skipped,
-                        icon: 'bi-slash-circle-fill',
-                        color: 'text-danger',
-                        label: 'Skipped'
-                    },
-                    {
-                        val: this.stats?.avg_time,
-                        icon: 'bi-clock-history',
-                        color: 'text-primary',
-                        label: 'Avg Time'
-                    }
-                ],
                 csrfToken: document.querySelector('meta[name="csrf-token"]').content,
-
-                async init() {
-                    setInterval(() => this.updateClock(), 1000);
-                    this.updateClock();
-
-                    await this.fetchData();
-
-                    if (this.counter && this.counter.service_id) {
-                        this.initBroadcastListener();
-                    }
-                },
-
-                async fetchData(showLoading = false) {
-
-                    if (showLoading) this.isLoading = true;
-
-                    try {
-                        const url = "{{ route('fetch.dashboard.staff.current-queue') }}";
-                        const res = await fetch(url, {
-                            method: 'GET',
-                            headers: {
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': this.csrfToken,
-                            }
-                        });
-                        const data = await res.json();
-
-                        this.user = data.user;
-                        this.counter = data.counter;
-                        this.service = data.service;
-                        this.stats = data.stats;
-                        this.currentQueue = data.currentQueue;
-                        this.nextQueue = data.nextQueue;
-                        this.waitingList = data.waitingList;
-                        this.historyList = data.historyList;
-
-                        this.checkAndStartTimer(data.serverTimeMs);
-
-                    } catch (error) {
-                        console.error("Fetch Error:", error);
-                    } finally {
-                        setTimeout(() => {
-                            this.isLoading = false;
-                        }, 300);
-                    }
-                },
-
-                initBroadcastListener() {
-                    Echo.private(`service.${this.counter.service_id}`)
-                        .listen(".got-queue", (event) => {
-                            this.fetchData(false);
-                        });
-                },
-
-                async sendAction(url, method = 'PUT', body = {}) {
-                    this.isLoading = true;
-
-                    try {
-                        const res = await fetch(url, {
-                            method,
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': this.csrfToken,
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
-                            },
-                            body: JSON.stringify(body)
-                        });
-
-                        const data = await res.json();
-
-                        if (!res.ok) {
-                            throw new Error(data.message || 'Terjadi kesalahan pada server');
-                        }
-
-                        this.fetchData(false);
-                    } catch (e) {
-                        console.error("Action Error:", e);
-                        this.isLoading = false;
-
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal',
-                            text: e.message,
-                            confirmButtonText: 'Oke',
-                            confirmButtonColor: '#dc3545',
-                            timer: 5000
-                        });
-                    }
-                },
-
-                callQueue(id) {
-                    const url = "{{ route('fetch.queues.call', ':ID') }}"
-                        .replace(':ID', id);
-
-                    this.sendAction(url);
-                },
-
-                directCallQueue(id) {
-                    const url = "{{ route('fetch.queues.direct-call', ':ID') }}"
-                        .replace(':ID', id);
-
-                    this.sendAction(url);
-                },
-
-                completeQueue(id) {
-                    const url = "{{ route('fetch.queues.complete', ':ID') }}"
-                        .replace(':ID', id);
-                    this.sendAction(url);
-                },
-
-                skipQueue(id) {
-                    const url = "{{ route('fetch.queues.skip', ':ID') }}"
-                        .replace(':ID', id);
-                    this.sendAction(url);
-                },
-
-                updateStatus(status) {
-                    const url = "{{ route('fetch.set-status-counter', ':ID') }}"
-                        .replace(':ID', this.counter.id);
-
-                    this.sendAction(url, 'PUT', {
-                        status
-                    });
-                },
 
                 get statusColor() {
                     const colors = {
@@ -630,26 +551,116 @@
                 },
 
                 get statusLabel() {
-                    return this.statusMap[this.counter?.status] || 'Offline';
+                    return this.statusMap[this.counter?.status] || '------';
                 },
 
-                checkAndStartTimer(serverTimeMs) {
+                async init() {
+                    this.updateClock();
+                    setInterval(() => this.updateClock(), 1000);
+                    await this.fetchData();
+
+                    if (this.counter) {}
+                },
+
+                async fetchData(showLoading = false) {
+                    if (showLoading) this.isLoading = true;
+                    try {
+                        const res = await fetch("{{ route('fetch.counter-dashboard') }}", {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': this.csrfToken
+                            }
+                        });
+                        const data = await res.json();
+                        console.log(data);
+
+                        this.user = data.user;
+                        this.counter = data.counter;
+                        this.waiting_count = data.waiting_count || 0;
+                        this.completed_count = data.completed_count || 0;
+                        this.skipped_count = data.skipped_count || 0;
+                        this.avg_service_time = data.avg_service_time || '0m';
+                        this.currentTicket = data.currentTicket;
+                        this.nextTicket = data.nextTicket;
+                        this.waitingTicket = data.waitingTicket || [];
+                        this.historyTicket = data.historyTicket || [];
+
+                        this.startTimerFromBackend();
+
+                    } catch (error) {
+                        console.error("Fetch Error:", error);
+                    } finally {
+                        setTimeout(() => this.isLoading = false, 300);
+                    }
+                },
+
+                async sendAction(url, method = 'PUT', body = {}) {
+                    this.isLoading = true;
+                    try {
+                        const res = await fetch(url, {
+                            method,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': this.csrfToken,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(body)
+                        });
+
+                        const data = await res.json();
+
+                        if (!res.ok) throw new Error(data.message || 'Action failed');
+                        this.fetchData(false);
+                    } catch (e) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: e.message
+                        });
+                        this.isLoading = false;
+                    }
+                },
+
+                callQueue(id) {
+                    this.sendAction("{{ route('fetch.queues.call', ':ID') }}".replace(':ID', id));
+                },
+
+                directCallQueue(id) {
+                    this.sendAction("{{ route('fetch.queues.direct-call', ':ID') }}".replace(':ID', id));
+                },
+
+                completeQueue(id) {
+                    this.sendAction("{{ route('fetch.queues.complete', ':ID') }}".replace(':ID', id));
+                },
+
+                skipQueue(id) {
+                    this.sendAction("{{ route('fetch.queues.skip', ':ID') }}".replace(':ID', id));
+                },
+
+                updateStatus(status) {
+                    this.sendAction("{{ route('fetch.set-status-counter', ':ID') }}".replace(':ID', this.counter.id),
+                        'PUT', {
+                            status
+                        });
+                },
+
+                startTimerFromBackend() {
                     if (this.timerInterval) clearInterval(this.timerInterval);
 
-                    if (this.currentQueue) {
-                        const storageKey = `q_start_${this.currentQueue.id}`;
-                        let startTime = localStorage.getItem(storageKey);
-
-                        if (!startTime) {
-                            startTime = Date.now();
-                            localStorage.setItem(storageKey, startTime);
-                        }
+                    if (this.currentTicket && this.currentTicket.called_at) {
+                        const startTime = new Date(this.currentTicket.called_at).getTime();
 
                         this.timerInterval = setInterval(() => {
-                            const diff = Math.floor((Date.now() - startTime) / 1000);
+                            const now = Date.now();
+                            const diff = Math.floor((now - startTime) / 1000);
+
+                            if (diff < 0) {
+                                this.timerDisplay = "00:00:00";
+                                return;
+                            }
+
                             const h = Math.floor(diff / 3600).toString().padStart(2, '0');
-                            const m = Math.floor((diff % 3600) / 60).toString().padStart(2,
-                                '0');
+                            const m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
                             const s = (diff % 60).toString().padStart(2, '0');
                             this.timerDisplay = `${h}:${m}:${s}`;
                         }, 1000);
@@ -661,6 +672,8 @@
                 updateClock() {
                     const now = new Date();
                     this.clockTime = now.toLocaleTimeString('id-ID', {
+                        hour: '2-digit',
+                        minute: '2-digit',
                         hour12: false
                     });
                     this.clockDate = now.toLocaleDateString('id-ID', {

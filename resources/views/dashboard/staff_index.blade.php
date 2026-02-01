@@ -153,7 +153,7 @@
 @endsection
 
 @section('content')
-    <section x-data="counterDashboard()" x-init="init()" class="position-relative min-vh-100">
+    <section x-data="counterDashboard()" class="position-relative min-vh-100">
 
         <div class="loading-overlay" :class="{ 'active': isLoading || isProcessing }">
             <div class="spinner mb-4"></div>
@@ -196,12 +196,13 @@
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-4 text-center">
                                     <div
-                                        class="d-inline-flex flex-column align-items-center px-4 py-2 rounded-4 bg-white-subtle shadow-sm border border-light">
-                                        <h2 class="fw-black font-monospace mb-0 text-dark tracking-tight"
-                                            style="font-size: 2.5rem;" x-text="clockTime"></h2>
-                                        <div class="d-flex align-items-center gap-2 text-muted mt-1">
-                                            <i class="far fa-calendar-alt small"></i>
-                                            <span class="fw-bold small text-uppercase tracking-wide"
+                                        class="d-inline-flex flex-column align-items-center px-5 py-3 rounded-4 bg-white shadow-sm border border-light transition-hover">
+                                        <h2 class="fw-black font-monospace mb-0 text-dark tracking-tighter"
+                                            style="font-size: 3rem; line-height: 1;" x-text="clockTime"></h2>
+                                        <div
+                                            class="d-flex align-items-center gap-2 text-muted mt-2 pt-2 border-top w-100 justify-content-center">
+                                            <i class="far fa-calendar-alt text-primary small"></i>
+                                            <span class="fw-bold small text-uppercase tracking-widest"
                                                 x-text="clockDate"></span>
                                         </div>
                                     </div>
@@ -353,15 +354,7 @@
                         </template>
 
                         <template x-if="!nextTicket">
-                            <div>
-                                <p class="text-muted mb-4 px-5">Belum ada antrian baru.</p>
-                                <div>
-                                    <button type="button" @click="fetchData(true)"
-                                        class="btn btn-outline-secondary rounded-pill px-4 py-2">
-                                        <i class="bi bi-arrow-clockwise me-2"></i> Refresh Data
-                                    </button>
-                                </div>
-                            </div>
+                            <p class="text-muted mb-4 px-5">Belum ada antrian baru.</p>
                         </template>
                     </div>
                 </template>
@@ -559,11 +552,19 @@
                     setInterval(() => this.updateClock(), 1000);
                     await this.fetchData();
 
-                    if (this.counter) {}
+                    Echo.channel('touch')
+                        .listen('.QueueUpdated', (e) => {
+                            console.log('WebSocket Event Received:', e);
+                            this.fetchData();
+                        });
                 },
 
                 async fetchData(showLoading = false) {
+                    if (this.isProcessing) return;
+
+                    this.isProcessing = true;
                     if (showLoading) this.isLoading = true;
+
                     try {
                         const res = await fetch("{{ route('fetch.counter-dashboard') }}", {
                             headers: {
@@ -590,6 +591,7 @@
                     } catch (error) {
                         console.error("Fetch Error:", error);
                     } finally {
+                        this.isProcessing = false;
                         setTimeout(() => this.isLoading = false, 300);
                     }
                 },

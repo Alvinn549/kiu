@@ -166,89 +166,93 @@
                     <div class="card-body p-0">
 
                         <div class="p-4">
-                            <div class="row g-4 align-items-center">
-                                <div class="col-12 col-lg-4">
-                                    <div class="ps-2 h-100">
-                                        <div
-                                            class="bg-light bg-opacity-50 rounded-4 p-3 d-flex flex-column justify-content-center h-100 border border-light">
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <i class="fas fa-desktop text-primary small"></i>
-                                                    <span class="fw-bold text-primary small text-uppercase tracking-wider"
-                                                        x-text="counter?.name"></span>
-                                                </div>
-                                                <span
-                                                    class="badge rounded-pill bg-success-subtle text-success border border-success-subtle"
-                                                    style="font-size: 0.6rem;">
-                                                    <i class="fas fa-circle fa-xs me-1"></i> LIVE
-                                                </span>
-                                            </div>
+                            <div class="row g-4 align-items-stretch">
+                                <div class="col-12 col-lg-8">
+                                    <div class="rounded-4 bg-white border border-light shadow-sm h-100 d-flex flex-column">
 
-                                            <div class="mt-1">
-                                                <h4 class="fw-black mb-0 text-dark text-truncate" x-text="user?.name"></h4>
-                                                <div class="text-muted small">
-                                                    <i class="fas fa-at text-xs me-1"></i><span
-                                                        x-text="user?.username"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-12 col-md-6 col-lg-4 text-center">
-                                    <div
-                                        class="d-inline-flex flex-column w-100 align-items-center px-5 py-3 rounded-4 bg-white shadow-sm border border-light transition-hover">
-                                        <h2 class="fw-black font-monospace mb-0 text-dark tracking-tighter"
-                                            style="font-size: 3rem; line-height: 1;" x-text="clockTime"></h2>
-                                        <div
-                                            class="d-flex align-items-center gap-2 text-muted mt-2 pt-2 border-top w-100 justify-content-center">
-                                            <i class="far fa-calendar-alt text-primary small"></i>
-                                            <span class="fw-bold small text-uppercase tracking-widest"
-                                                x-text="clockDate"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-12 col-md-6 col-lg-4">
-                                    <div class="dropdown">
-                                        <label class="small fw-bold text-muted text-uppercase mb-2 d-block ms-2"
-                                            style="font-size: 0.65rem;">
-                                            <i class="fas fa-sliders-h me-1"></i> Kontrol Loket
-                                        </label>
-                                        <button
-                                            class="btn btn-white w-100 border shadow-sm rounded-4 px-4 py-3 d-flex align-items-center justify-content-between bg-white-subtle"
-                                            type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport">
-                                            <div class="d-flex align-items-center gap-3">
-                                                <div class="position-relative">
-                                                    <div class="status-dot-pulse rounded-circle"
-                                                        :class="`bg-${statusColor} pulse-${statusColor}`"
-                                                        style="width: 12px; height: 12px;"></div>
-                                                </div>
-                                                <div class="text-start">
-                                                    <span class="d-block fw-black lh-1" :class="`text-${statusColor}`"
-                                                        x-text="statusLabel"></span>
-                                                    <small class="text-muted" style="font-size: 0.7rem;">Ganti Status
-                                                        Sekarang</small>
-                                                </div>
-                                            </div>
-                                            <i class="fas fa-chevron-down text-muted small chevron-rotate"></i>
-                                        </button>
-
-                                        <ul
-                                            class="dropdown-menu dropdown-menu-end shadow-xl border-0 rounded-4 p-2 mt-2 w-100">
-                                            <template x-for="(label, key) in statusMap" :key="key">
-                                                <li>
-                                                    <button type="button" @click="updateStatus(key)"
-                                                        class="dropdown-item rounded-3 py-2 px-3 d-flex align-items-center justify-content-between"
-                                                        :class="counter?.status === key ? 'bg-primary text-white fw-bold' : ''">
-
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span x-text="label"></span>
+                                        <div class="p-3 flex-grow-1 d-flex align-items-center">
+                                            <div class="row g-0 w-100 align-items-center">
+                                                <div class="col-auto pe-3 border-end">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div class="bg-primary-subtle rounded-3 p-2 d-inline-flex">
+                                                            <i class="fas fa-desktop text-primary"></i>
                                                         </div>
+                                                        <span
+                                                            class="fw-bold text-primary small text-uppercase tracking-wider"
+                                                            x-text="counter?.name"></span>
+                                                    </div>
+                                                </div>
 
-                                                        <i x-show="counter?.status === key" class="fas fa-check-circle"></i>
-                                                    </button>
-                                                </li>
-                                            </template>
-                                        </ul>
+                                                <div class="col ps-3">
+                                                    <div
+                                                        class="d-flex flex-column flex-md-row align-items-md-center gap-md-2">
+                                                        <h5 class="fw-bold mb-0 text-dark text-truncate"
+                                                            x-text="user?.name"></h5>
+                                                        <span class="text-muted small d-none d-md-inline">•</span>
+                                                        <div class="text-muted small">
+                                                            <i class="fas fa-at text-xs opacity-50"></i>
+                                                            <span x-text="user?.username"></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-auto">
+                                                    <span
+                                                        class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-2"
+                                                        style="font-size: 0.65rem; letter-spacing: 0.5px;">
+                                                        <i class="fas fa-circle fa-xs me-1 pulse-success"></i> LIVE
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="p-3 border-top bg-light-subtle rounded-bottom-4">
+                                            <div class="dropdown">
+                                                <button
+                                                    class="btn btn-white w-100 border shadow-sm rounded-3 px-3 py-2 d-flex align-items-center justify-content-between transition-all"
+                                                    type="button" data-bs-toggle="dropdown"
+                                                    style="border-color: #e2e8f0; background: #fff;">
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <div class="status-dot-pulse rounded-circle"
+                                                            :class="`bg-${statusColor} pulse-${statusColor}`"
+                                                            style="width: 10px; height: 10px;"></div>
+                                                        <div class="text-start lh-1">
+                                                            <small class="text-muted d-block mb-1 text-uppercase fw-bold"
+                                                                style="font-size: 0.55rem;">Status Saat Ini</small>
+                                                            <span class="fw-bold" :class="`text-${statusColor}`"
+                                                                x-text="statusLabel"></span>
+                                                        </div>
+                                                    </div>
+                                                    <i class="fas fa-chevron-down text-muted small"></i>
+                                                </button>
+                                                <ul
+                                                    class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 p-2 mt-2 w-100">
+                                                    <template x-for="(label, key) in statusMap" :key="key">
+                                                        <li>
+                                                            <button type="button" @click="updateStatus(key)"
+                                                                class="dropdown-item rounded-3 py-2 px-3 d-flex align-items-center justify-content-between mb-1"
+                                                                :class="counter?.status === key ? 'bg-primary text-white' : ''">
+                                                                <span x-text="label"></span>
+                                                                <i x-show="counter?.status === key"
+                                                                    class="fas fa-check-circle"></i>
+                                                            </button>
+                                                        </li>
+                                                    </template>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-md-6 col-lg-4">
+                                    <div
+                                        class="text-center py-2 px-3 bg-light rounded-4 border border-dashed h-100 d-flex flex-column justify-content-center">
+                                        <h2 class="fw-black font-monospace mb-0 text-primary tracking-tighter"
+                                            style="font-size: 2.5rem;" x-text="clockTime"></h2>
+                                        <div class="text-muted small fw-semibold text-uppercase mt-1"
+                                            style="letter-spacing: 2px;">
+                                            <i class="far fa-calendar-alt me-1"></i> <span x-text="clockDate"></span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

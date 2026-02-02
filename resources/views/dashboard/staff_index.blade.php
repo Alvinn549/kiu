@@ -244,7 +244,7 @@
                                     </div>
                                 </div>
 
-                                <div class="col-12 col-md-6 col-lg-4">
+                                <div class="col-12 col-md-12 col-lg-4">
                                     <div
                                         class="text-center py-2 px-3 bg-light rounded-4 border border-dashed h-100 d-flex flex-column justify-content-center">
                                         <h2 class="fw-black font-monospace mb-0 text-primary tracking-tighter"

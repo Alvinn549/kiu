@@ -155,7 +155,7 @@
 @section('content')
     <section x-data="counterDashboard()" class="position-relative min-vh-100">
 
-        <div class="loading-overlay" :class="{ 'active': isLoading || isProcessing }">
+        <div class="loading-overlay" :class="{ 'active': isProcessing }">
             <div class="spinner mb-4"></div>
             <h2 class="text-white fw-bold">Memproses...</h2>
         </div>
@@ -170,7 +170,7 @@
                                 <div class="col-12 col-lg-4">
                                     <div class="ps-2 h-100">
                                         <div
-                                            class="bg-light bg-opacity-50 rounded-4 p-3 d-flex flex-column justify-content-center h-100 border border-white">
+                                            class="bg-light bg-opacity-50 rounded-4 p-3 d-flex flex-column justify-content-center h-100 border border-light">
                                             <div class="d-flex justify-content-between align-items-start mb-2">
                                                 <div class="d-flex align-items-center gap-2">
                                                     <i class="fas fa-desktop text-primary small"></i>
@@ -196,7 +196,7 @@
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-4 text-center">
                                     <div
-                                        class="d-inline-flex flex-column align-items-center px-5 py-3 rounded-4 bg-white shadow-sm border border-light transition-hover">
+                                        class="d-inline-flex flex-column w-100 align-items-center px-5 py-3 rounded-4 bg-white shadow-sm border border-light transition-hover">
                                         <h2 class="fw-black font-monospace mb-0 text-dark tracking-tighter"
                                             style="font-size: 3rem; line-height: 1;" x-text="clockTime"></h2>
                                         <div
@@ -223,7 +223,7 @@
                                                         style="width: 12px; height: 12px;"></div>
                                                 </div>
                                                 <div class="text-start">
-                                                    <span class="d-block fw-black text-dark lh-1"
+                                                    <span class="d-block fw-black lh-1" :class="`text-${statusColor}`"
                                                         x-text="statusLabel"></span>
                                                     <small class="text-muted" style="font-size: 0.7rem;">Ganti Status
                                                         Sekarang</small>
@@ -231,6 +231,7 @@
                                             </div>
                                             <i class="fas fa-chevron-down text-muted small chevron-rotate"></i>
                                         </button>
+
                                         <ul
                                             class="dropdown-menu dropdown-menu-end shadow-xl border-0 rounded-4 p-2 mt-2 w-100">
                                             <template x-for="(label, key) in statusMap" :key="key">
@@ -238,12 +239,11 @@
                                                     <button type="button" @click="updateStatus(key)"
                                                         class="dropdown-item rounded-3 py-2 px-3 d-flex align-items-center justify-content-between"
                                                         :class="counter?.status === key ? 'bg-primary text-white fw-bold' : ''">
+
                                                         <div class="d-flex align-items-center gap-2">
-                                                            <i class="fas fa-circle fa-xs"
-                                                                :class="counter?.status === key ? 'text-white' : 'text-' + (
-                                                                    key === 'active' ? 'success' : 'danger')"></i>
                                                             <span x-text="label"></span>
                                                         </div>
+
                                                         <i x-show="counter?.status === key" class="fas fa-check-circle"></i>
                                                     </button>
                                                 </li>
@@ -511,7 +511,6 @@
     <script>
         function counterDashboard() {
             return {
-                isLoading: true,
                 isProcessing: false,
                 user: null,
                 counter: null,
@@ -552,18 +551,14 @@
                     setInterval(() => this.updateClock(), 1000);
                     await this.fetchData();
 
-                    Echo.channel('touch')
-                        .listen('.QueueUpdated', (e) => {
-                            console.log('WebSocket Event Received:', e);
+                    Echo.channel('new-ticket')
+                        .listen('NewTicketEvent', (e) => {
                             this.fetchData();
                         });
                 },
 
-                async fetchData(showLoading = false) {
-                    if (this.isProcessing) return;
-
+                async fetchData() {
                     this.isProcessing = true;
-                    if (showLoading) this.isLoading = true;
 
                     try {
                         const res = await fetch("{{ route('fetch.counter-dashboard') }}", {
@@ -573,7 +568,6 @@
                             }
                         });
                         const data = await res.json();
-                        console.log(data);
 
                         this.user = data.user;
                         this.counter = data.counter;
@@ -592,12 +586,11 @@
                         console.error("Fetch Error:", error);
                     } finally {
                         this.isProcessing = false;
-                        setTimeout(() => this.isLoading = false, 300);
                     }
                 },
 
                 async sendAction(url, method = 'PUT', body = {}) {
-                    this.isLoading = true;
+                    this.isProcessing = true;
                     try {
                         const res = await fetch(url, {
                             method,
@@ -612,14 +605,14 @@
                         const data = await res.json();
 
                         if (!res.ok) throw new Error(data.message || 'Action failed');
-                        this.fetchData(false);
+                        this.fetchData();
                     } catch (e) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
                             text: e.message
                         });
-                        this.isLoading = false;
+                        this.isProcessing = false;
                     }
                 },
 

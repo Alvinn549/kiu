@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewTicketEvent;
 use App\Models\Service;
 use App\Models\Ticket;
 use App\Models\TicketStep;
@@ -99,6 +100,8 @@ class TouchController extends Controller
 
                 return $ticket;
             });
+
+            broadcast(new NewTicketEvent);
 
             return response()->json([
                 'status' => 'success',

@@ -17,3 +17,7 @@ Broadcast::channel('touch', function () {
 Broadcast::channel('main-display', function () {
     return true;
 });
+
+Broadcast::channel('new-ticket', function () {
+    return true;
+});
